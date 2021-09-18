@@ -19,7 +19,16 @@ struct RecommendationView: View {
                 .scaledToFit()
                 .cornerRadius(10)
             Text(model.newContent?.title ?? "")
-        }.onAppear {
+                .font(.title)
+            Button {
+                model.getNewRecommendation()
+            } label: {
+                BlueButton(text:"New Recommendation")
+            }
+
+        }
+        .padding()
+        .onAppear {
             model.getNewRecommendation()
         }
     }

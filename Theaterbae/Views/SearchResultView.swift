@@ -22,6 +22,7 @@ struct SearchResultView: View {
                 .scaledToFit()
                 .cornerRadius(10)
             Text(model.searchContent?.title ?? "")
+                .font(.title)
             
             NavigationLink(destination: RecommendationView()) {
                 BlueButton(text:"Recommend")
