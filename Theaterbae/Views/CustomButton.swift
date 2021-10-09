@@ -7,17 +7,22 @@
 
 import SwiftUI
 
-struct BlueButton: View {
+struct CustomButton: View {
     
     var text:String
+    var color:Color? // defaults to blue
     
     var body: some View {
         ZStack {
             Rectangle()
-                .background(Color.blue)
+                // Button color
+                .foregroundColor(color ?? .blue)
+                // Height
                 .frame(height:48)
+                // Edge rounding
                 .cornerRadius(10)
             Text(text)
+                // Text color
                 .foregroundColor(Color.white)
         }.padding()
     }
@@ -25,6 +30,6 @@ struct BlueButton: View {
 
 struct BlueButton_Previews: PreviewProvider {
     static var previews: some View {
-        BlueButton(text: "Test Text")
+        CustomButton(text: "Button Text", color: .blue)
     }
 }

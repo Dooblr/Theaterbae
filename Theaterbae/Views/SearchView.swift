@@ -14,23 +14,46 @@ struct SearchView: View {
     // Search field
     @State var inputString = ""
     
+    @State var alertTextFieldIsEmptyIsPresented = false
+    
+    
     var body: some View {
         
         NavigationView {
          
             VStack {
                 
-                Text("Enter a movie to find recommendations")
+                Text("Search a movie or show to get recommendations")
                 
-                TextField("Enter a movie title", text: $inputString)
+                TextField("The Office", text: $inputString)
                     .padding()
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .textFieldStyle(.roundedBorder)
+                    .cornerRadius(20)
                 
                 NavigationLink(destination: SearchResultView(title:inputString)) {
-                    BlueButton(text:"Search")
+                    CustomButton(text:"Search", color: .blue)
                 }
-            }.padding()
-            
+                .disabled(inputString == "")
+                .onTapGesture {
+                    if (inputString == "") {
+                        alertTextFieldIsEmptyIsPresented = true
+                    }
+                }
+                Spacer()
+                    
+            }
+            .padding()
+            .onAppear {
+                inputString = ""
+            }
+            .alert("Enter a movie or show title to find recommendations", isPresented: $alertTextFieldIsEmptyIsPresented, actions: {
+                Button {
+                    alertTextFieldIsEmptyIsPresented = false
+                } label: {
+                    Text("Ok")
+                }
+
+            })
         }
     }
 }

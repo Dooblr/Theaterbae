@@ -15,7 +15,7 @@
 		843184DD26F213D500220C3F /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184D826F213BF00220C3F /* Model.swift */; };
 		843184DE26F213D700220C3F /* ContentModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184D626F213BD00220C3F /* ContentModel.swift */; };
 		843184DF26F213DC00220C3F /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184D426F213BB00220C3F /* SearchView.swift */; };
-		843184E126F21A2B00220C3F /* BlueButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184E026F21A2B00220C3F /* BlueButton.swift */; };
+		843184E126F21A2B00220C3F /* CustomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184E026F21A2B00220C3F /* CustomButton.swift */; };
 		843184E326F21B2000220C3F /* RecommendationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184E226F21B2000220C3F /* RecommendationView.swift */; };
 /* End PBXBuildFile section */
 
@@ -30,7 +30,7 @@
 		843184D626F213BD00220C3F /* ContentModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentModel.swift; sourceTree = "<group>"; };
 		843184D826F213BF00220C3F /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		843184DA26F213C200220C3F /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		843184E026F21A2B00220C3F /* BlueButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueButton.swift; sourceTree = "<group>"; };
+		843184E026F21A2B00220C3F /* CustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomButton.swift; sourceTree = "<group>"; };
 		843184E226F21B2000220C3F /* RecommendationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -90,7 +90,7 @@
 				843184D426F213BB00220C3F /* SearchView.swift */,
 				843184D326F213BB00220C3F /* SearchResultView.swift */,
 				843184E226F21B2000220C3F /* RecommendationView.swift */,
-				843184E026F21A2B00220C3F /* BlueButton.swift */,
+				843184E026F21A2B00220C3F /* CustomButton.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -188,7 +188,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				843184E126F21A2B00220C3F /* BlueButton.swift in Sources */,
+				843184E126F21A2B00220C3F /* CustomButton.swift in Sources */,
 				843184C426F2138700220C3F /* TheaterbaeApp.swift in Sources */,
 				843184DB26F213CC00220C3F /* SearchResultView.swift in Sources */,
 				843184E326F21B2000220C3F /* RecommendationView.swift in Sources */,
@@ -328,7 +328,7 @@
 				DEVELOPMENT_TEAM = UY79DE276H;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Theaterbae/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -350,7 +350,7 @@
 				DEVELOPMENT_TEAM = UY79DE276H;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Theaterbae/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

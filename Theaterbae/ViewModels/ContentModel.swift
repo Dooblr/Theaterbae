@@ -26,8 +26,17 @@ class ContentModel: ObservableObject {
     // New content from searched name
     @Published var newContent:KnownForTitle?
     
-    // array to hold already shown content
+    // Array to hold content already shown
     var shownContentIds = [String]()
+    
+    // Index for the displayed imdb content if first result is incorrect and user says 'Not my content'
+    @Published var searchIndex = 0
+    
+    // Toggle to alert the user when they have reached the end of the IMDB auto-search results
+    @Published var alertIsPresented = false
+    
+    // Toggle to return to search view
+    @Published var searchViewNavIsActive = false
     
     // MARK: - IMDB API Methods
     
@@ -43,10 +52,11 @@ class ContentModel: ObservableObject {
         request.allHTTPHeaderFields = headers
 
         let session = URLSession.shared
-        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+        session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
             if (error != nil) {
                 print(error!)
             } else {
+                // Monitor HTTP responses including usage reports
 //                let httpResponse = response as? HTTPURLResponse
 //                print(httpResponse)
                 do {
@@ -55,7 +65,14 @@ class ContentModel: ObservableObject {
                     DispatchQueue.main.async {
                         
                         // set selected content to returned result
-                        self.searchContent = result.d.first
+                        if self.searchIndex < result.d.count {
+                            self.searchContent = result.d[self.searchIndex]
+                        } else {
+                            // Display an alert notifying the user that there are no other results
+                            self.alertIsPresented = true
+                            self.searchViewNavIsActive = true
+                            // Navigate back to SearchView on alert dismiss
+                        }
                         
                         // set the displayed image
                         self.setImageDataFromUrl(url: self.searchContent?.image?.imageUrl ?? "")
@@ -70,9 +87,7 @@ class ContentModel: ObservableObject {
                     print(error)
                 }
             }
-        })
-
-        dataTask.resume()
+        }).resume()
         
     }
     
@@ -123,31 +138,32 @@ class ContentModel: ObservableObject {
     
     func getTopContentFromFirstCast() {
         
-        // gets the first member of the cast
+        // TODO: use the first 2+ actors and use them for recommendations instead of just the first
+        
+        // Get the first member of the cast
         let firstCast = self.searchCast?.first
         
-        // format to IMDB ID name code
+        // Format to IMDB ID name code
         let firstCastIMDBId = firstCast!.dropFirst(6).dropLast(1)
         
         let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/actors/get-known-for?nconst=\(firstCastIMDBId)")! as URL,
                                                 cachePolicy: .useProtocolCachePolicy,
                                             timeoutInterval: 10.0)
-        request.httpMethod = "GET"
-        request.allHTTPHeaderFields = headers
+            request.httpMethod = "GET"
+            request.allHTTPHeaderFields = headers
 
         let session = URLSession.shared
-        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+        session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
             do {
                 let result = try JSONDecoder().decode([KnownForSearch].self, from: data!)
+                
                 DispatchQueue.main.async {
                     
-                    // if the first result is the same as the searched result, go to the second item
-//                    let newId = result.first?.id!.dropFirst(7).dropLast(1)
-                    
-                    // loop through known for titles
+                    // Loop through known for titles
                     for knownForTitle in result {
+                        // Format for IMDB
                         let slicedTitle = knownForTitle.title?.id?.dropFirst(7).dropLast(1)
-                        if self.shownContentIds.contains((slicedTitle.map(String.init)!)) != true {
+                        if !self.shownContentIds.contains((slicedTitle.map(String.init)!)) {
                             self.newContent = knownForTitle.title
                             self.shownContentIds.append(slicedTitle.map(String.init)!)
                             break
@@ -160,9 +176,6 @@ class ContentModel: ObservableObject {
             } catch {
                 print(error)
             }
-        })
-
-        dataTask.resume()
-//        return
+        }).resume()
     }
 }

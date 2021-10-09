@@ -23,7 +23,7 @@ struct RecommendationView: View {
             Button {
                 model.getNewRecommendation()
             } label: {
-                BlueButton(text:"New Recommendation")
+                CustomButton(text:"New Recommendation", color:.blue)
             }
 
         }
