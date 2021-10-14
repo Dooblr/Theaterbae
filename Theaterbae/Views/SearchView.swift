@@ -14,8 +14,7 @@ struct SearchView: View {
     // Search field
     @State var inputString = ""
     
-    @State var alertTextFieldIsEmptyIsPresented = false
-    
+    @State var alertEmptyTextFieldIsPresented = false
     
     var body: some View {
         
@@ -30,30 +29,32 @@ struct SearchView: View {
                     .textFieldStyle(.roundedBorder)
                     .cornerRadius(20)
                 
-                NavigationLink(destination: SearchResultView(title:inputString)) {
+                NavigationLink(destination: ConfirmSearchResultView(title:inputString)) {
                     CustomButton(text:"Search", color: .blue)
                 }
                 .disabled(inputString == "")
                 .onTapGesture {
                     if (inputString == "") {
-                        alertTextFieldIsEmptyIsPresented = true
+                        alertEmptyTextFieldIsPresented = true
                     }
                 }
+                
                 Spacer()
                     
             }
             .padding()
             .onAppear {
                 inputString = ""
+                // Reset the search index
+                model.searchIndex = 0
             }
-            .alert("Enter a movie or show title to find recommendations", isPresented: $alertTextFieldIsEmptyIsPresented, actions: {
+            .alert("Enter a movie or show title to find recommendations", isPresented: $alertEmptyTextFieldIsPresented) {
                 Button {
-                    alertTextFieldIsEmptyIsPresented = false
+                    alertEmptyTextFieldIsPresented = false
                 } label: {
                     Text("Ok")
                 }
-
-            })
+            }
         }
     }
 }

@@ -13,15 +13,20 @@ struct RecommendationView: View {
     
     var body: some View {
         VStack{
+            
             let uiImage = UIImage(data: model.imageData ?? Data())
             Image(uiImage: uiImage ?? UIImage())
                 .resizable()
                 .scaledToFit()
                 .cornerRadius(10)
-            Text(model.newContent?.title ?? "")
+            Text(model.recommendedContent?.title ?? "")
                 .font(.title)
             Button {
-                model.getNewRecommendation()
+                model.getCastFromId(IMDBId: (model.searchContent?.id)!)
+                // TODO: Check if length of recommendedTitles has been hit
+                // TODO: if so, throw an alert and return to search screen
+                
+                
             } label: {
                 CustomButton(text:"New Recommendation", color:.blue)
             }
@@ -29,7 +34,7 @@ struct RecommendationView: View {
         }
         .padding()
         .onAppear {
-            model.getNewRecommendation()
+            model.getCastFromId(IMDBId: (model.searchContent?.id)!)
         }
     }
 }

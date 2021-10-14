@@ -20,11 +20,12 @@ class ContentModel: ObservableObject {
     
     // ID of the movie the user entered
     var searchId:String?
+    
     // Cast of the movie user entered
     var searchCast:[String]?
     
     // New content from searched name
-    @Published var newContent:KnownForTitle?
+    @Published var recommendedContent:KnownForTitle?
     
     // Array to hold content already shown
     var shownContentIds = [String]()
@@ -32,11 +33,13 @@ class ContentModel: ObservableObject {
     // Index for the displayed imdb content if first result is incorrect and user says 'Not my content'
     @Published var searchIndex = 0
     
-    // Toggle to alert the user when they have reached the end of the IMDB auto-search results
-    @Published var alertIsPresented = false
+    // MARK: - Alerts
     
-    // Toggle to return to search view
-    @Published var searchViewNavIsActive = false
+    // Toggle to alert the user when they have reached the end of the IMDB auto-search results
+    @Published var autoSearchAlertIsPresented = false
+    
+    // Toggle alert for no internet
+    @Published var alertNoInternet = false
     
     // MARK: - IMDB API Methods
     
@@ -55,6 +58,9 @@ class ContentModel: ObservableObject {
         session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
             if (error != nil) {
                 print(error!)
+                DispatchQueue.main.async {
+                    self.alertNoInternet = true
+                }
             } else {
                 // Monitor HTTP responses including usage reports
 //                let httpResponse = response as? HTTPURLResponse
@@ -68,10 +74,9 @@ class ContentModel: ObservableObject {
                         if self.searchIndex < result.d.count {
                             self.searchContent = result.d[self.searchIndex]
                         } else {
-                            // Display an alert notifying the user that there are no other results
-                            self.alertIsPresented = true
-                            self.searchViewNavIsActive = true
-                            // Navigate back to SearchView on alert dismiss
+                            // There are no other results
+//                            self.autoSearchAlertIsPresented = true
+//                            self.searchViewNavIsActive = true
                         }
                         
                         // set the displayed image
@@ -104,23 +109,16 @@ class ContentModel: ObservableObject {
         }
     }
     
-    func getNewRecommendation() {
-        
-        // get the cast from the searched movie's ID
-        self.getCastFromId(IMDBId: (self.searchContent?.id)!)
-        
-    }
-    
     func getCastFromId(IMDBId: String) {
 
         let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/title/get-top-cast?tconst=\(IMDBId)")! as URL,
                                                 cachePolicy: .useProtocolCachePolicy,
                                             timeoutInterval: 10.0)
-        request.httpMethod = "GET"
-        request.allHTTPHeaderFields = headers
+            request.httpMethod = "GET"
+            request.allHTTPHeaderFields = headers
 
         let session = URLSession.shared
-        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+        session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
             if (error != nil) {
                 print(error!)
             } else {
@@ -132,50 +130,59 @@ class ContentModel: ObservableObject {
                     print(error)
                 }
             }
-        })
-        dataTask.resume()
+        }).resume()
     }
     
     func getTopContentFromFirstCast() {
         
-        // TODO: use the first 2+ actors and use them for recommendations instead of just the first
-        
-        // Get the first member of the cast
+        // MARK: TODO use the first 3 actors
+        // gets the first member of the cast
         let firstCast = self.searchCast?.first
         
-        // Format to IMDB ID name code
+        // format to IMDB ID name code
         let firstCastIMDBId = firstCast!.dropFirst(6).dropLast(1)
         
         let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/actors/get-known-for?nconst=\(firstCastIMDBId)")! as URL,
                                                 cachePolicy: .useProtocolCachePolicy,
                                             timeoutInterval: 10.0)
-            request.httpMethod = "GET"
-            request.allHTTPHeaderFields = headers
+        request.httpMethod = "GET"
+        request.allHTTPHeaderFields = headers
 
         let session = URLSession.shared
-        session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
             do {
                 let result = try JSONDecoder().decode([KnownForSearch].self, from: data!)
                 
                 DispatchQueue.main.async {
                     
-                    // Loop through known for titles
+                    // loop through known for titles
                     for knownForTitle in result {
-                        // Format for IMDB
+                        
+                        // IMDB format
                         let slicedTitle = knownForTitle.title?.id?.dropFirst(7).dropLast(1)
+                        
+                        // If the ID has not already been shown to the user, continue...
                         if !self.shownContentIds.contains((slicedTitle.map(String.init)!)) {
-                            self.newContent = knownForTitle.title
+                            
+                            // knownForTitle is a single item in the list of results from an IMDB movie/show cast ID
+                            self.recommendedContent = knownForTitle.title
+                            
+                            // Add said item from above
                             self.shownContentIds.append(slicedTitle.map(String.init)!)
+                            
                             break
                         }
                     }
                     
                     // set the displayed image data to new content image
-                    self.setImageDataFromUrl(url: self.newContent?.image?.url ?? "")
+                    self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "")
                 }
             } catch {
                 print(error)
             }
-        }).resume()
+        })
+
+        dataTask.resume()
     }
+    
 }

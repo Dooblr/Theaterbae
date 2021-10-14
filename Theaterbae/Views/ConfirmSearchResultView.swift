@@ -7,22 +7,27 @@
 
 import SwiftUI
 
-struct SearchResultView: View {
+struct ConfirmSearchResultView: View {
     
     @EnvironmentObject var model: ContentModel
+    
+    @State var showSearchView = false
     
     var title: String
     
     var body: some View {
         
         VStack{
+            
             let uiImage = UIImage(data: model.imageData ?? Data())
             Image(uiImage: uiImage ?? UIImage())
                 .resizable()
                 .scaledToFit()
                 .cornerRadius(10)
+//                .redacted(reason: .placeholder)
             Text(model.searchContent?.title ?? "")
                 .font(.title)
+//                .redacted(reason: SwiftUI.RedactionReasons.)
             
             Spacer()
             
@@ -43,17 +48,20 @@ struct SearchResultView: View {
                 }
             }
             
-            NavigationLink(isActive: $model.searchViewNavIsActive, destination: { SearchView() }, label: {
-                EmptyView()
-            })
+            // TODO: Navigate transition left instead of right
+            NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: self.$showSearchView) { EmptyView() }
+            
         }.onAppear {
             model.getIMDBTitle(title: title)
-        }.alert("End of available content", isPresented: $model.alertIsPresented) {
+        }.alert("End of available content", isPresented: $model.autoSearchAlertIsPresented) {
 //            Alert(title: Text("Alert"), message: Text("End of results"), dismissButton: .default(Text("Ok")))
-            Button("OK", role:.cancel) {
-                model.searchViewNavIsActive = true
+            Button("Ok") {
+                self.showSearchView = true
             }
-            
+        }.alert("No internet connection", isPresented: $model.alertNoInternet) {
+            Button("Ok") {
+                self.showSearchView = true
+            }
         }
     }
 }
