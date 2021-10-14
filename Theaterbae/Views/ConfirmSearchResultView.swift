@@ -19,34 +19,41 @@ struct ConfirmSearchResultView: View {
         
         VStack{
             
-            let uiImage = UIImage(data: model.imageData ?? Data())
-            Image(uiImage: uiImage ?? UIImage())
-                .resizable()
-                .scaledToFit()
-                .cornerRadius(10)
-//                .redacted(reason: .placeholder)
-            Text(model.searchContent?.title ?? "")
-                .font(.title)
-//                .redacted(reason: SwiftUI.RedactionReasons.)
-            
-            Spacer()
-            
-            Text("Is this the content you're looking for?").padding()
-            
-            // Yes/No buttons
-            HStack{
+            if model.isLoading == false {
+                let uiImage = UIImage(data: model.imageData ?? Data())
+                Image(uiImage: uiImage ?? UIImage())
+                    .resizable()
+                    .scaledToFit()
+                    .cornerRadius(10)
+    //                .redacted(reason: .placeholder)
+                Text(model.searchContent?.title ?? "")
+                    .font(.title)
+    //                .redacted(reason: SwiftUI.RedactionReasons.)
                 
-                NavigationLink(destination: RecommendationView()) {
-                    CustomButton(text: "Yes", color: .green)
-                }
+                Spacer()
                 
-                Button {
-                    model.searchIndex += 1
-                    model.getIMDBTitle(title: title)
-                } label: {
-                    CustomButton(text: "No", color: .red)
+                Text("Is this the content you're looking for?").padding()
+                
+                // Yes/No buttons
+                HStack{
+                    
+                    NavigationLink(destination: RecommendationView()) {
+                        CustomButton(text: "Yes", color: .green)
+                    }
+                    
+                    Button {
+                        // Increment the search index to look for the next title in the list of resulting titles
+                        model.searchIndex += 1
+                        model.getIMDBTitle(title: title)
+                    } label: {
+                        CustomButton(text: "No", color: .red)
+                    }
                 }
+            } else {
+                Text("Loading...")
             }
+            
+            
             
             // TODO: Navigate transition left instead of right
             NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: self.$showSearchView) { EmptyView() }

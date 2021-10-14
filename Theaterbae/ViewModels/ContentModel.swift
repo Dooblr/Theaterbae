@@ -18,6 +18,9 @@ class ContentModel: ObservableObject {
     @Published var searchContent:IMDBTitle?
     @Published var imageData:Data?
     
+    // Used to show loading view while pulling data
+    @Published var isLoading: Bool?
+    
     // ID of the movie the user entered
     var searchId:String?
     
@@ -42,9 +45,12 @@ class ContentModel: ObservableObject {
     @Published var alertNoInternet = false
     
     // MARK: - IMDB API Methods
+    // TODO: Switch all functions to async await
     
     // Initial user-inputted search for an IMDB title, publishes the object, and adds id to shownContentIds
     func getIMDBTitle (title:String) {
+        
+        self.isLoading = true
         
         // remove whitespace and url incompatible characters
         let titleNoWhitespace = title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
@@ -75,25 +81,22 @@ class ContentModel: ObservableObject {
                             self.searchContent = result.d[self.searchIndex]
                         } else {
                             // There are no other results
-//                            self.autoSearchAlertIsPresented = true
-//                            self.searchViewNavIsActive = true
                         }
                         
                         // set the displayed image
                         self.setImageDataFromUrl(url: self.searchContent?.image?.imageUrl ?? "")
                         
-                        // set searchId
-//                        self.searchId = self.searchContent?.id
-                        
                         // add searchId to shown content
                         self.shownContentIds.append((self.searchContent?.id)!)
+                        
+                        // Inform views that loading has completed
+                        self.isLoading = false
                     }
                 } catch {
                     print(error)
                 }
             }
         }).resume()
-        
     }
     
     func setImageDataFromUrl(url:String) {
@@ -109,7 +112,10 @@ class ContentModel: ObservableObject {
         }
     }
     
+    // Takes an IMDB ID and sets the search cast
     func getCastFromId(IMDBId: String) {
+        
+        self.isLoading = true
 
         let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/title/get-top-cast?tconst=\(IMDBId)")! as URL,
                                                 cachePolicy: .useProtocolCachePolicy,
@@ -133,9 +139,10 @@ class ContentModel: ObservableObject {
         }).resume()
     }
     
+    // Takes a cast and sets recommended content
     func getTopContentFromFirstCast() {
         
-        // MARK: TODO use the first 3 actors
+        // TODO: use the first 3 actors
         // gets the first member of the cast
         let firstCast = self.searchCast?.first
         
@@ -167,7 +174,7 @@ class ContentModel: ObservableObject {
                             // knownForTitle is a single item in the list of results from an IMDB movie/show cast ID
                             self.recommendedContent = knownForTitle.title
                             
-                            // Add said item from above
+                            // Add recommended content to the already shown array
                             self.shownContentIds.append(slicedTitle.map(String.init)!)
                             
                             break
@@ -176,6 +183,8 @@ class ContentModel: ObservableObject {
                     
                     // set the displayed image data to new content image
                     self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "")
+                    
+                    self.isLoading = false
                 }
             } catch {
                 print(error)
