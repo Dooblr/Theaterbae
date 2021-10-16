@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SearchView: View {
     
-    @EnvironmentObject var model: ContentModel
+    @EnvironmentObject var model: DiscoverModel
     
     // Search field
     @State var inputString = ""

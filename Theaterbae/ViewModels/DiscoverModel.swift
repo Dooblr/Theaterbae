@@ -8,9 +8,10 @@
 import Foundation
 
 
-class ContentModel: ObservableObject {
+class DiscoverModel: ObservableObject {
 
-    let headers = [
+    // IMDB RapidAPI GET request headers
+    let rapidApiHeaders = [
         "x-rapidapi-host": "imdb8.p.rapidapi.com",
         "x-rapidapi-key": "c5e55581dcmsh765de9634a8dff2p144394jsn3456c03b3062"
     ]
@@ -50,6 +51,7 @@ class ContentModel: ObservableObject {
     // Initial user-inputted search for an IMDB title, publishes the object, and adds id to shownContentIds
     func getIMDBTitle (title:String) {
         
+        // Notify view to display loading screen
         self.isLoading = true
         
         // remove whitespace and url incompatible characters
@@ -58,7 +60,7 @@ class ContentModel: ObservableObject {
                                                 cachePolicy: .useProtocolCachePolicy,
                                             timeoutInterval: 10.0)
         request.httpMethod = "GET"
-        request.allHTTPHeaderFields = headers
+        request.allHTTPHeaderFields = rapidApiHeaders
 
         let session = URLSession.shared
         session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
@@ -121,7 +123,7 @@ class ContentModel: ObservableObject {
                                                 cachePolicy: .useProtocolCachePolicy,
                                             timeoutInterval: 10.0)
             request.httpMethod = "GET"
-            request.allHTTPHeaderFields = headers
+            request.allHTTPHeaderFields = rapidApiHeaders
 
         let session = URLSession.shared
         session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
@@ -153,7 +155,7 @@ class ContentModel: ObservableObject {
                                                 cachePolicy: .useProtocolCachePolicy,
                                             timeoutInterval: 10.0)
         request.httpMethod = "GET"
-        request.allHTTPHeaderFields = headers
+        request.allHTTPHeaderFields = rapidApiHeaders
 
         let session = URLSession.shared
         let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
@@ -184,6 +186,7 @@ class ContentModel: ObservableObject {
                     // set the displayed image data to new content image
                     self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "")
                     
+                    // Notify view to remove loading view
                     self.isLoading = false
                 }
             } catch {

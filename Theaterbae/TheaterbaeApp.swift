@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct TheaterbaeApp: App {
+    
+    let persistenceController = PersistenceController.shared
+    
     var body: some Scene {
         WindowGroup {
-            SearchView().environmentObject(ContentModel())
+            TabContainerView()
+                .environmentObject(DiscoverModel())
+                .environmentObject(WatchListModel())
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
 }

@@ -24,7 +24,7 @@ struct CustomButton: View {
             Text(text)
                 // Text color
                 .foregroundColor(Color.white)
-        }.padding()
+        }
     }
 }
 

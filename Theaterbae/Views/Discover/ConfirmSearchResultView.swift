@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ConfirmSearchResultView: View {
     
-    @EnvironmentObject var model: ContentModel
+    @EnvironmentObject var model: DiscoverModel
     
     @State var showSearchView = false
     
@@ -49,6 +49,7 @@ struct ConfirmSearchResultView: View {
                         CustomButton(text: "No", color: .red)
                     }
                 }
+                .padding()
             } else {
                 Text("Loading...")
             }
