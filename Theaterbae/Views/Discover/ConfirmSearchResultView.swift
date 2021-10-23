@@ -20,7 +20,7 @@ struct ConfirmSearchResultView: View {
         VStack{
             
             if model.isLoading == false {
-                let uiImage = UIImage(data: model.imageData ?? Data())
+                let uiImage = UIImage(data: model.confirmTitleImageData ?? Data())
                 Image(uiImage: uiImage ?? UIImage())
                     .resizable()
                     .scaledToFit()
@@ -37,6 +37,7 @@ struct ConfirmSearchResultView: View {
                 // Yes/No buttons
                 HStack{
                     
+                    // Move to the recomendation view
                     NavigationLink(destination: RecommendationView()) {
                         CustomButton(text: "Yes", color: .green)
                     }

@@ -17,7 +17,11 @@ class DiscoverModel: ObservableObject {
     ]
     
     @Published var searchContent:IMDBTitle?
-    @Published var imageData:Data?
+    
+    // Image data for views
+    @Published var confirmTitleImageData:Data?
+    @Published var recommendationImageData:Data?
+    
     
     // Used to show loading view while pulling data
     @Published var isLoading: Bool?
@@ -48,6 +52,7 @@ class DiscoverModel: ObservableObject {
     // MARK: - IMDB API Methods
     // TODO: Switch all functions to async await
     
+    // MARK: DATA FUNCTION
     // Initial user-inputted search for an IMDB title, publishes the object, and adds id to shownContentIds
     func getIMDBTitle (title:String) {
         
@@ -71,8 +76,8 @@ class DiscoverModel: ObservableObject {
                 }
             } else {
                 // Monitor HTTP responses including usage reports
-//                let httpResponse = response as? HTTPURLResponse
-//                print(httpResponse)
+                // let httpResponse = response as? HTTPURLResponse
+                // print(httpResponse)
                 do {
                     let result = try JSONDecoder().decode(IMDBSearch.self, from: data!)
                     
@@ -86,7 +91,7 @@ class DiscoverModel: ObservableObject {
                         }
                         
                         // set the displayed image
-                        self.setImageDataFromUrl(url: self.searchContent?.image?.imageUrl ?? "")
+                        self.setImageDataFromUrl(url: self.searchContent?.image?.imageUrl ?? "", forView:"ConfirmSearchResultView")
                         
                         // add searchId to shown content
                         self.shownContentIds.append((self.searchContent?.id)!)
@@ -101,24 +106,38 @@ class DiscoverModel: ObservableObject {
         }).resume()
     }
     
-    func setImageDataFromUrl(url:String) {
+    func setImageDataFromUrl(url:String, forView:String) {
         
         if let url = URL(string: url) {
             let session = URLSession.shared
             let dataTask = session.dataTask(with: url) { data, response, error in
+                
+                // Sets the image data based on the view name passed in
                 DispatchQueue.main.async {
-                    self.imageData = data!
+                    switch forView{
+                    case "ConfirmSearchResultView":
+                        self.confirmTitleImageData = data ?? Data()
+                    case "RecommendationView":
+                        self.recommendationImageData = data ?? Data()
+                    default:
+                        break
+                    }
                 }
             }
             dataTask.resume()
         }
     }
     
-    // Takes an IMDB ID and sets the search cast
+    // Takes an IMDB ID and gets the search cast, then gets content from said cast
     func getCastFromId(IMDBId: String) {
         
+        // Change view to loading screen
         self.isLoading = true
+        
+        // Clear previously set recommended image data
+        self.recommendationImageData = Data()
 
+        // Runs IMDB's get-top-cast call, and on completion gets the content from the cast
         let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/title/get-top-cast?tconst=\(IMDBId)")! as URL,
                                                 cachePolicy: .useProtocolCachePolicy,
                                             timeoutInterval: 10.0)
@@ -133,7 +152,7 @@ class DiscoverModel: ObservableObject {
                 do {
                     let result = try JSONDecoder().decode([String].self, from: data!)
                     self.searchCast = result
-                    self.getTopContentFromFirstCast()
+                    self.getTopContentFromCast()
                 } catch {
                     print(error)
                 }
@@ -142,7 +161,7 @@ class DiscoverModel: ObservableObject {
     }
     
     // Takes a cast and sets recommended content
-    func getTopContentFromFirstCast() {
+    func getTopContentFromCast() {
         
         // TODO: use the first 3 actors
         // gets the first member of the cast
@@ -184,7 +203,7 @@ class DiscoverModel: ObservableObject {
                     }
                     
                     // set the displayed image data to new content image
-                    self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "")
+                    self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "", forView: "RecommendationView")
                     
                     // Notify view to remove loading view
                     self.isLoading = false

@@ -12,12 +12,14 @@ struct RecommendationView: View {
     @EnvironmentObject var discoverModel:DiscoverModel
     @EnvironmentObject var watchListModel:WatchListModel
     
+    @State var addedToWatchlistAlertIsPresented = false
+    
     var body: some View {
         VStack{
             
             if discoverModel.isLoading == false {
                 
-                let uiImage = UIImage(data: discoverModel.imageData ?? Data())
+                let uiImage = UIImage(data: discoverModel.recommendationImageData ?? Data())
                 Image(uiImage: uiImage ?? UIImage())
                     .resizable()
                     .scaledToFit()
@@ -39,6 +41,7 @@ struct RecommendationView: View {
                 Button  {
                     watchListModel.addContent(name: discoverModel.recommendedContent?.title ?? "")
                     discoverModel.getCastFromId(IMDBId: (discoverModel.searchContent?.id)!)
+                    addedToWatchlistAlertIsPresented = true
                 } label: {
                     CustomButton(text:"Add to watch list", color:.green)
                 }
@@ -50,6 +53,11 @@ struct RecommendationView: View {
         .padding()
         .onAppear {
             discoverModel.getCastFromId(IMDBId: (discoverModel.searchContent?.id)!)
+        }
+        .alert("Added to Watch List", isPresented: $addedToWatchlistAlertIsPresented) {
+            Button {} label: {
+                Text("Ok")
+            }
         }
     }
 }

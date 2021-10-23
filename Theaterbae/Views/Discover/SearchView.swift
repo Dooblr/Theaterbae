@@ -40,6 +40,8 @@ struct SearchView: View {
                 }
                 
                 Spacer()
+                
+                
                     
             }
             .padding()

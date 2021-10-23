@@ -10,10 +10,6 @@ import CoreData
 
 class WatchListModel: ObservableObject {
     
-    // Array of saved titles
-    @Published var watchList = ["one", "two", "three"]
-    
-    
     let container: NSPersistentContainer
     @Published var savedEntities: [ContentEntity] = []
     
@@ -47,6 +43,13 @@ class WatchListModel: ObservableObject {
         saveData()
     }
     
+    func deleteContent(indexSet:IndexSet) {
+        guard let index = indexSet.first else { return }
+        let entity = savedEntities[index]
+        container.viewContext.delete(entity)
+        saveData()
+    }
+    
     func saveData() {
         do {
             try container.viewContext.save()
@@ -54,6 +57,5 @@ class WatchListModel: ObservableObject {
         } catch let error {
             print("Error saving. \(error)")
         }
-        
     }
 }

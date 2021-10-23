@@ -12,10 +12,19 @@ struct WatchListView: View {
     @EnvironmentObject var model: WatchListModel
     
     var body: some View {
-        List{
-            ForEach(model.savedEntities, id:\.self) { item in
-                Text(item.name!)
+        
+        VStack{
+            List{
+                ForEach(model.savedEntities, id:\.self) { item in
+                    Text(item.name!)
+                }.onDelete(perform: model.deleteContent)
             }
+//            Button {
+//
+//            } label: {
+//                CustomButton(text: "Delete all", color: .red)
+//            }
+
         }
     }
 }
