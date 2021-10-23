@@ -32,6 +32,9 @@ class DiscoverModel: ObservableObject {
     // Cast of the movie user entered
     var searchCast:[String]?
     
+    // Known for titles set via searchCast -- it's type KnownForSearch but its just the json wrapper for [KnownForTitle]
+    var knownForContent:[KnownForSearch]?
+    
     // New content from searched name
     @Published var recommendedContent:KnownForTitle?
     
@@ -129,7 +132,7 @@ class DiscoverModel: ObservableObject {
     }
     
     // Takes an IMDB ID and gets the search cast, then gets content from said cast
-    func getCastFromId(IMDBId: String) {
+    func getCastFromId(IMDBId: String, completion: @escaping () -> Void) {
         
         // Change view to loading screen
         self.isLoading = true
@@ -152,7 +155,8 @@ class DiscoverModel: ObservableObject {
                 do {
                     let result = try JSONDecoder().decode([String].self, from: data!)
                     self.searchCast = result
-                    self.getTopContentFromCast()
+//                    self.getKnownForContentFromCast()
+                    completion()
                 } catch {
                     print(error)
                 }
@@ -160,8 +164,8 @@ class DiscoverModel: ObservableObject {
         }).resume()
     }
     
-    // Takes a cast and sets recommended content
-    func getTopContentFromCast() {
+    // Uses the search cast and gets their "Known for" content
+    func getKnownForContentFromCast(completion: @escaping () -> Void) {
         
         // TODO: use the first 3 actors
         // gets the first member of the cast
@@ -180,40 +184,46 @@ class DiscoverModel: ObservableObject {
         let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
             do {
                 let result = try JSONDecoder().decode([KnownForSearch].self, from: data!)
+                self.knownForContent = result
+                completion()
                 
-                DispatchQueue.main.async {
-                    
-                    // loop through known for titles
-                    for knownForTitle in result {
-                        
-                        // IMDB format
-                        let slicedTitle = knownForTitle.title?.id?.dropFirst(7).dropLast(1)
-                        
-                        // If the ID has not already been shown to the user, continue...
-                        if !self.shownContentIds.contains((slicedTitle.map(String.init)!)) {
-                            
-                            // knownForTitle is a single item in the list of results from an IMDB movie/show cast ID
-                            self.recommendedContent = knownForTitle.title
-                            
-                            // Add recommended content to the already shown array
-                            self.shownContentIds.append(slicedTitle.map(String.init)!)
-                            
-                            break
-                        }
-                    }
-                    
-                    // set the displayed image data to new content image
-                    self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "", forView: "RecommendationView")
-                    
-                    // Notify view to remove loading view
-                    self.isLoading = false
-                }
             } catch {
                 print(error)
             }
         })
 
         dataTask.resume()
+    }
+    
+    func setRecommendedContent() {
+        
+        DispatchQueue.main.async {
+            
+            // loop through known for titles
+            for knownForTitle in self.knownForContent! {
+                
+                // IMDB format
+                let slicedTitle = knownForTitle.title?.id?.dropFirst(7).dropLast(1)
+                
+                // If the ID has not already been shown to the user, continue...
+                if !self.shownContentIds.contains((slicedTitle.map(String.init)!)) {
+                    
+                    // knownForTitle is a single item in the list of results from an IMDB movie/show cast ID
+                    self.recommendedContent = knownForTitle.title
+                    
+                    // Add recommended content to the already shown array
+                    self.shownContentIds.append(slicedTitle.map(String.init)!)
+                    
+                    break
+                }
+            }
+            
+            // set the displayed image data to new content image
+            self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "", forView: "RecommendationView")
+            
+            // Notify view to remove loading view
+            self.isLoading = false
+        }
     }
     
 }

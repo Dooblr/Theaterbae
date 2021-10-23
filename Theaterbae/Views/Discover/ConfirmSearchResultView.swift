@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ConfirmSearchResultView: View {
     
-    @EnvironmentObject var model: DiscoverModel
+    @EnvironmentObject var discoverModel: DiscoverModel
     
     @State var showSearchView = false
     
@@ -19,14 +19,14 @@ struct ConfirmSearchResultView: View {
         
         VStack{
             
-            if model.isLoading == false {
-                let uiImage = UIImage(data: model.confirmTitleImageData ?? Data())
+            if discoverModel.isLoading == false {
+                let uiImage = UIImage(data: discoverModel.confirmTitleImageData ?? Data())
                 Image(uiImage: uiImage ?? UIImage())
                     .resizable()
                     .scaledToFit()
                     .cornerRadius(10)
     //                .redacted(reason: .placeholder)
-                Text(model.searchContent?.title ?? "")
+                Text(discoverModel.searchContent?.title ?? "")
                     .font(.title)
     //                .redacted(reason: SwiftUI.RedactionReasons.)
                 
@@ -44,8 +44,8 @@ struct ConfirmSearchResultView: View {
                     
                     Button {
                         // Increment the search index to look for the next title in the list of resulting titles
-                        model.searchIndex += 1
-                        model.getIMDBTitle(title: title)
+                        discoverModel.searchIndex += 1
+                        discoverModel.getIMDBTitle(title: title)
                     } label: {
                         CustomButton(text: "No", color: .red)
                     }
@@ -55,19 +55,17 @@ struct ConfirmSearchResultView: View {
                 Text("Loading...")
             }
             
-            
-            
             // TODO: Navigate transition left instead of right
             NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: self.$showSearchView) { EmptyView() }
             
         }.onAppear {
-            model.getIMDBTitle(title: title)
-        }.alert("End of available content", isPresented: $model.autoSearchAlertIsPresented) {
+            discoverModel.getIMDBTitle(title: title)
+        }.alert("End of available content", isPresented: $discoverModel.autoSearchAlertIsPresented) {
 //            Alert(title: Text("Alert"), message: Text("End of results"), dismissButton: .default(Text("Ok")))
             Button("Ok") {
                 self.showSearchView = true
             }
-        }.alert("No internet connection", isPresented: $model.alertNoInternet) {
+        }.alert("No internet connection", isPresented: $discoverModel.alertNoInternet) {
             Button("Ok") {
                 self.showSearchView = true
             }

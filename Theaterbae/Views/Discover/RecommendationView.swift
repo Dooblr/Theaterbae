@@ -14,6 +14,8 @@ struct RecommendationView: View {
     
     @State var addedToWatchlistAlertIsPresented = false
     
+    
+    
     var body: some View {
         VStack{
             
@@ -30,7 +32,8 @@ struct RecommendationView: View {
                 
                 // Provides a new recommendation
                 Button {
-                    discoverModel.getCastFromId(IMDBId: (discoverModel.searchContent?.id)!)
+                    // Get a new recommendation
+                    discoverModel.setRecommendedContent()
                 } label: {
                     CustomButton(text:"New Recommendation", color:.blue)
                 }
@@ -39,8 +42,13 @@ struct RecommendationView: View {
                 
                 // Adds to watch list, loads a new recommendation, TODO: provides an alert
                 Button  {
+                    // Add to coredata
                     watchListModel.addContent(name: discoverModel.recommendedContent?.title ?? "")
-                    discoverModel.getCastFromId(IMDBId: (discoverModel.searchContent?.id)!)
+                    
+                    // Get a new recommendation
+                    discoverModel.setRecommendedContent()
+                    
+                    // Alert that it has been saved
                     addedToWatchlistAlertIsPresented = true
                 } label: {
                     CustomButton(text:"Add to watch list", color:.green)
@@ -52,7 +60,13 @@ struct RecommendationView: View {
         }
         .padding()
         .onAppear {
-            discoverModel.getCastFromId(IMDBId: (discoverModel.searchContent?.id)!)
+            discoverModel.getCastFromId(IMDBId: (discoverModel.searchContent?.id)!) {
+                // Get a new recommendation
+                discoverModel.getKnownForContentFromCast {
+                    discoverModel.setRecommendedContent()
+                }
+            }
+            
         }
         .alert("Added to Watch List", isPresented: $addedToWatchlistAlertIsPresented) {
             Button {} label: {
