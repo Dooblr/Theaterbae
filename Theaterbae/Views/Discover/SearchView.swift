@@ -40,11 +40,10 @@ struct SearchView: View {
                 }
                 
                 Spacer()
-                
-                
                     
             }
             .padding()
+            .navigationTitle("Discover")
             .onAppear {
                 inputString = ""
                 // Reset the search index

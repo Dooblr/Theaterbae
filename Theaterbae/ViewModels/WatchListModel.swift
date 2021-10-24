@@ -36,10 +36,12 @@ class WatchListModel: ObservableObject {
         
     }
     
-    func addContent(name: String) {
+    func addContent(id: String, name: String, image: Data) {
         
         let newContent = ContentEntity(context: container.viewContext)
+        newContent.id = id
         newContent.name = name
+        newContent.image = image
         saveData()
     }
     

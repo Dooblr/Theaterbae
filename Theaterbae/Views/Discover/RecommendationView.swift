@@ -14,8 +14,6 @@ struct RecommendationView: View {
     
     @State var addedToWatchlistAlertIsPresented = false
     
-    
-    
     var body: some View {
         VStack{
             
@@ -43,7 +41,9 @@ struct RecommendationView: View {
                 // Adds to watch list, loads a new recommendation, TODO: provides an alert
                 Button  {
                     // Add to coredata
-                    watchListModel.addContent(name: discoverModel.recommendedContent?.title ?? "")
+                    watchListModel.addContent(id: discoverModel.recommendedContent?.id ?? "",
+                                              name: discoverModel.recommendedContent?.title ?? "",
+                                              image: discoverModel.recommendationImageData ?? Data())
                     
                     // Get a new recommendation
                     discoverModel.setRecommendedContent()
@@ -60,19 +60,24 @@ struct RecommendationView: View {
         }
         .padding()
         .onAppear {
+            
             discoverModel.getCastFromId(IMDBId: (discoverModel.searchContent?.id)!) {
-                // Get a new recommendation
                 discoverModel.getKnownForContentFromCast {
+                    // Get a new recommendation
                     discoverModel.setRecommendedContent()
                 }
             }
-            
         }
         .alert("Added to Watch List", isPresented: $addedToWatchlistAlertIsPresented) {
             Button {} label: {
                 Text("Ok")
             }
         }
+//        .alert("No additional recommendations available", isPresented: $noRecommendationsAlertIsPresented) {
+//            Button {} label: {
+//                Text("Ok")
+//            }
+//        }
     }
 }
 

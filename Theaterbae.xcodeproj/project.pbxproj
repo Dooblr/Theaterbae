@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		842C26A227255016007BA633 /* WatchListDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842C26A127255016007BA633 /* WatchListDetailView.swift */; };
 		843184C426F2138700220C3F /* TheaterbaeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184C326F2138700220C3F /* TheaterbaeApp.swift */; };
 		843184C826F2138900220C3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 843184C726F2138900220C3F /* Assets.xcassets */; };
 		843184CB26F2138900220C3F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 843184CA26F2138900220C3F /* Preview Assets.xcassets */; };
@@ -25,6 +26,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		842C26A127255016007BA633 /* WatchListDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchListDetailView.swift; sourceTree = "<group>"; };
 		843184C026F2138700220C3F /* Theaterbae.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Theaterbae.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		843184C326F2138700220C3F /* TheaterbaeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheaterbaeApp.swift; sourceTree = "<group>"; };
 		843184C726F2138900220C3F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 			isa = PBXGroup;
 			children = (
 				84D953852718EF6A00CAB87D /* WatchListView.swift */,
+				842C26A127255016007BA633 /* WatchListDetailView.swift */,
 			);
 			path = "Watch List";
 			sourceTree = "<group>";
@@ -232,6 +235,7 @@
 				843184C426F2138700220C3F /* TheaterbaeApp.swift in Sources */,
 				843184DB26F213CC00220C3F /* ConfirmSearchResultView.swift in Sources */,
 				843184E326F21B2000220C3F /* RecommendationView.swift in Sources */,
+				842C26A227255016007BA633 /* WatchListDetailView.swift in Sources */,
 				843184DF26F213DC00220C3F /* SearchView.swift in Sources */,
 				843184DE26F213D700220C3F /* DiscoverModel.swift in Sources */,
 				84E7B6D8271ABD6B0000FA6D /* PersistenceController.swift in Sources */,

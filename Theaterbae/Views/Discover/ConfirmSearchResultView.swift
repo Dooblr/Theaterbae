@@ -9,8 +9,10 @@ import SwiftUI
 
 struct ConfirmSearchResultView: View {
     
+    // Access to view driving model
     @EnvironmentObject var discoverModel: DiscoverModel
     
+    // Programattic transition change
     @State var showSearchView = false
     
     var title: String
@@ -32,7 +34,10 @@ struct ConfirmSearchResultView: View {
                 
                 Spacer()
                 
-                Text("Is this the content you're looking for?").padding()
+                VStack{
+                    Text("Recommend something new based on this content?")
+                    Text("Tap no to try another title").foregroundColor((Color.primary).opacity(0.33))
+                }.padding()
                 
                 // Yes/No buttons
                 HStack{
@@ -44,8 +49,10 @@ struct ConfirmSearchResultView: View {
                     
                     Button {
                         // Increment the search index to look for the next title in the list of resulting titles
+                        // TODO: fix getIMDBTitle() so it calls once and this button increments and reloads
                         discoverModel.searchIndex += 1
-                        discoverModel.getIMDBTitle(title: title)
+//                        discoverModel.getIMDBTitle(title: title)
+                        discoverModel.showNewSearchResult()
                     } label: {
                         CustomButton(text: "No", color: .red)
                     }
@@ -59,7 +66,9 @@ struct ConfirmSearchResultView: View {
             NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: self.$showSearchView) { EmptyView() }
             
         }.onAppear {
-            discoverModel.getIMDBTitle(title: title)
+            discoverModel.getIMDBTitle(title: title) {
+                discoverModel.showNewSearchResult()
+            }
         }.alert("End of available content", isPresented: $discoverModel.autoSearchAlertIsPresented) {
 //            Alert(title: Text("Alert"), message: Text("End of results"), dismissButton: .default(Text("Ok")))
             Button("Ok") {
