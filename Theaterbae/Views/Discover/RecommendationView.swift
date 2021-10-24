@@ -10,7 +10,7 @@ import SwiftUI
 struct RecommendationView: View {
     
     @EnvironmentObject var discoverModel:DiscoverModel
-    @EnvironmentObject var watchListModel:WatchListModel
+    @EnvironmentObject var watchListModel:DataModel
     
     @State var addedToWatchlistAlertIsPresented = false
     

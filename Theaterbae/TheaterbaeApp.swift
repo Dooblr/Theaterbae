@@ -16,7 +16,7 @@ struct TheaterbaeApp: App {
         WindowGroup {
             TabContainerView()
                 .environmentObject(DiscoverModel())
-                .environmentObject(WatchListModel())
+                .environmentObject(DataModel())
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }

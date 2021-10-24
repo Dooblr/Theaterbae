@@ -8,7 +8,7 @@
 import Foundation
 import CoreData
 
-class WatchListModel: ObservableObject {
+class DataModel: ObservableObject {
     
     let container: NSPersistentContainer
     @Published var savedEntities: [ContentEntity] = []
@@ -33,7 +33,6 @@ class WatchListModel: ObservableObject {
         } catch let error {
             print("Error fetching \(error)")
         }
-        
     }
     
     func addContent(id: String, name: String, image: Data) {

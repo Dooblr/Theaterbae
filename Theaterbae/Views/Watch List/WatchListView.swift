@@ -9,13 +9,13 @@ import SwiftUI
 
 struct WatchListView: View {
     
-    @EnvironmentObject var watchListModel: WatchListModel
+    @EnvironmentObject var dataModel: DataModel
     
     var body: some View {
         NavigationView{
             VStack{
                 List{
-                    ForEach(watchListModel.savedEntities, id:\.self) { item in
+                    ForEach(dataModel.savedEntities, id:\.self) { item in
                         NavigationLink (destination: WatchListDetailView()) {
                             HStack{
                                 
@@ -35,7 +35,7 @@ struct WatchListView: View {
                                 Image(systemName: "info.circle").foregroundColor(.gray)
                             }
                         }
-                    }.onDelete(perform: watchListModel.deleteContent)
+                    }.onDelete(perform: dataModel.deleteContent)
                 }
     //            Button {
     //
