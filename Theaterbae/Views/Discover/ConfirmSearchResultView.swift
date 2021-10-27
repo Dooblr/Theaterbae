@@ -15,6 +15,8 @@ struct ConfirmSearchResultView: View {
     // Programattic transition change
     @State var showSearchView = false
     
+//    @State var 
+    
     var title: String
     
     var body: some View {
@@ -66,9 +68,14 @@ struct ConfirmSearchResultView: View {
             NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: $showSearchView) { EmptyView() }
             
         }.onAppear {
-            discoverModel.getIMDBTitle(title: title) {
+            if discoverModel.searchContent == nil {
+                discoverModel.getIMDBTitle(title: title) {
+                    discoverModel.showNewSearchResult()
+                }
+            } else {
                 discoverModel.showNewSearchResult()
             }
+            
         }.alert("End of available content", isPresented: $discoverModel.autoSearchAlertIsPresented) {
 //            Alert(title: Text("Alert"), message: Text("End of results"), dismissButton: .default(Text("Ok")))
             Button("Ok") {

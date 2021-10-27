@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SearchView: View {
     
-    @EnvironmentObject var model: DiscoverModel
+    @EnvironmentObject var discoverModel: DiscoverModel
     
     // Search field
     @State var inputString = ""
@@ -46,8 +46,12 @@ struct SearchView: View {
             .navigationTitle("Discover")
             .onAppear {
                 inputString = ""
+                
                 // Reset the search index
-                model.searchIndex = 0
+                discoverModel.searchIndex = 0
+                
+                // Reset the search content
+                discoverModel.searchContent = nil
             }
             .alert("Enter a movie or show title to find recommendations", isPresented: $alertEmptyTextFieldIsPresented) {
                 Button {
