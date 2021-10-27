@@ -15,6 +15,9 @@ struct RecommendationView: View {
     // Alerts
     @State var addedToWatchlistAlertIsPresented = false
     
+    // Toggle for navigating back to SearchView
+    @State var showSearchView = false
+    
     var body: some View {
         VStack{
             
@@ -58,6 +61,8 @@ struct RecommendationView: View {
             } else {
                 Text("Loading...")
             }
+            
+            NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: $showSearchView) { EmptyView() }
         }
         .padding()
         .onAppear {
@@ -74,9 +79,10 @@ struct RecommendationView: View {
                 Text("Ok")
             }
         }
-        .alert("End of available recommendations", isPresented: $discoverModel.noRecommendationsAlertIsPresented) {
+        .alert("End of available recommendations", isPresented: $discoverModel.noRecommendationsRemaining) {
             Button {
-                // Navigate back to search
+                // Navigates back to search
+                showSearchView = true
             } label: {
                 Text("Ok")
             }

@@ -63,7 +63,7 @@ struct ConfirmSearchResultView: View {
             }
             
             // TODO: Navigate transition left instead of right
-            NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: self.$showSearchView) { EmptyView() }
+            NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: $showSearchView) { EmptyView() }
             
         }.onAppear {
             discoverModel.getIMDBTitle(title: title) {
@@ -72,11 +72,11 @@ struct ConfirmSearchResultView: View {
         }.alert("End of available content", isPresented: $discoverModel.autoSearchAlertIsPresented) {
 //            Alert(title: Text("Alert"), message: Text("End of results"), dismissButton: .default(Text("Ok")))
             Button("Ok") {
-                self.showSearchView = true
+                showSearchView = true
             }
         }.alert("No internet connection", isPresented: $discoverModel.alertNoInternet) {
             Button("Ok") {
-                self.showSearchView = true
+                showSearchView = true
             }
         }
     }

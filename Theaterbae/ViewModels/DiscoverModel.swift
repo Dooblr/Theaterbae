@@ -65,7 +65,7 @@ class DiscoverModel: ObservableObject {
     @Published var alertNoInternet = false
 
     // Alert recommendation view that no more recommendations are available, and return to search view
-    @Published var noRecommendationsAlertIsPresented = false
+    @Published var noRecommendationsRemaining = false
 
     // MARK: - IMDB API Methods
     // TODO: Update data methods to async await
@@ -222,15 +222,18 @@ class DiscoverModel: ObservableObject {
             // TODO: If shownContentID's contains every ID in knownForContent, throw alert
 
             // loop through known for titles
+            var index = 0
             for knownForTitle in self.knownForContent! {
-
+                
+                print(self.knownForContent?.count)
+                
                 // IMDB format
                 let imdbTitleIdStripped = knownForTitle.title?.id?.dropFirst(7).dropLast(1)
                 let imdbTitleId = imdbTitleIdStripped.map(String.init)!
-                
+
                 // If the ID has not already been shown to the user, continue
                 if !self.shownContentIds.contains(imdbTitleId) {
-                    
+
                     // Set the observed recommended content
                     // knownForTitle is a single item in the list of results from an IMDB content cast ID
                     self.recommendedContent = knownForTitle.title
@@ -240,27 +243,11 @@ class DiscoverModel: ObservableObject {
 
                     break
                 }
+                index += 1
+                if index == self.knownForContent!.count {
+                    self.noRecommendationsRemaining = true
+                }
             }
-            
-//            self.knownForContent!.enumerated().forEach { (index, knownForTitle) in
-//
-//                // IMDB format
-//                let imdbTitleIdStripped = knownForTitle.title?.id?.dropFirst(7).dropLast(1)
-//                let imdbTitleId = imdbTitleIdStripped.map(String.init)!
-//
-//                // If the ID has not already been shown to the user, continue
-//                if !self.shownContentIds.contains(imdbTitleId) {
-//
-//                    // Set the observed recommended content
-//                    // knownForTitle is a single item in the list of results from an IMDB content cast ID
-//                    self.recommendedContent = knownForTitle.title
-//
-//                    // Add recommended content to the already shown array
-//                    self.shownContentIds.append(imdbTitleIdStripped.map(String.init)!)
-//
-////                    break
-//                }
-//            }
 
             // set the displayed image data to new content image
             self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "", forView: "RecommendationView")
