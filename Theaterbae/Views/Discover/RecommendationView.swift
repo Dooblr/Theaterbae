@@ -12,6 +12,7 @@ struct RecommendationView: View {
     @EnvironmentObject var discoverModel:DiscoverModel
     @EnvironmentObject var watchListModel:DataModel
     
+    // Alerts
     @State var addedToWatchlistAlertIsPresented = false
     
     var body: some View {
@@ -70,6 +71,13 @@ struct RecommendationView: View {
         }
         .alert("Added to Watch List", isPresented: $addedToWatchlistAlertIsPresented) {
             Button {} label: {
+                Text("Ok")
+            }
+        }
+        .alert("End of available recommendations", isPresented: $discoverModel.noRecommendationsAlertIsPresented) {
+            Button {
+                // Navigate back to search
+            } label: {
                 Text("Ok")
             }
         }
