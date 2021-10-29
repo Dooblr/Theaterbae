@@ -29,6 +29,8 @@ struct WatchListView: View {
                                     .padding(.vertical)
                                     
                                 Text(item.name ?? "")
+                                    .font(.title2)
+                                    .padding(.leading, UIScreen.main.bounds.width/15)
                                 
                                 Spacer()
                                 
@@ -37,15 +39,6 @@ struct WatchListView: View {
                         }
                     }.onDelete(perform: dataModel.deleteContent)
                 }
-    //            Button {
-    //
-    //            } label: {
-    //                CustomButton(text: "Delete all", color: .red)
-    //            }
-
-            }
-            .onAppear {
-                
             }
             .navigationBarTitle("Watch List")
         }

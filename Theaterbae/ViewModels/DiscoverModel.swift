@@ -33,7 +33,7 @@ class DiscoverModel: ObservableObject {
     var searchCast:[String]?
 
     // Known for titles set via searchCast - type KnownForSearch is the json entrypoint for [KnownForTitle]
-    var knownForContent:[KnownForSearch]?
+    @Published var knownForContent = [KnownForSearch]()
 
     // New content from searched name
     @Published var recommendedContent:KnownForTitle?
@@ -63,6 +63,8 @@ class DiscoverModel: ObservableObject {
 
     // Toggle alert for no internet
     @Published var alertNoInternet = false
+    
+//    @Published var 
 
     // Alert recommendation view that no more recommendations are available, and return to search view
     @Published var noRecommendationsRemaining = false
@@ -185,47 +187,54 @@ class DiscoverModel: ObservableObject {
     // Uses the search cast and gets their "Known for" content
     func getKnownForContentFromCast(completion: @escaping () -> Void) {
 
-        // TODO: use the first 3 actors
-        // gets the first member of the cast
-        let firstCast = self.searchCast?.first
+        // Dispatch group to call completion after all API calls have finished
+        let knownForDispatchGroup = DispatchGroup()
+        for index in 0...2 {
+            
+            // Notify dispatch that api call has started
+            knownForDispatchGroup.enter()
+            // format to IMDB ID name code
+            let ImdbCastID = self.searchCast![index].dropFirst(6).dropLast(1)
 
-        // format to IMDB ID name code
-        let firstCastIMDBId = firstCast!.dropFirst(6).dropLast(1)
+            let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/actors/get-known-for?nconst=\(ImdbCastID)")! as URL,
+                                                    cachePolicy: .useProtocolCachePolicy,
+                                                timeoutInterval: 10.0)
+            request.httpMethod = "GET"
+            request.allHTTPHeaderFields = Constants.rapidApiHeaders
 
-        let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/actors/get-known-for?nconst=\(firstCastIMDBId)")! as URL,
-                                                cachePolicy: .useProtocolCachePolicy,
-                                            timeoutInterval: 10.0)
-        request.httpMethod = "GET"
-        request.allHTTPHeaderFields = Constants.rapidApiHeaders
-
-        let session = URLSession.shared
-        let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
-            do {
-                let result = try JSONDecoder().decode([KnownForSearch].self, from: data!)
-                self.knownForContent = result
-                completion()
-
-            } catch {
-                print(error)
-            }
-        })
-
-        dataTask.resume()
+            let session = URLSession.shared
+            let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+                do {
+                    let result = try JSONDecoder().decode([KnownForSearch].self, from: data!)
+                    for searchResult in result {
+                        DispatchQueue.main.async {
+                            self.knownForContent.append(searchResult)
+                        }
+                    }
+                    // Notify dispatch that API call has finished
+                    knownForDispatchGroup.leave()
+                } catch {
+                    print(error)
+                }
+            })
+            dataTask.resume()
+            
+            
+        }
+        
+        // Run completion after all API calls have finished
+        knownForDispatchGroup.notify(queue: .main) {
+            completion()
+        }
     }
 
     func setRecommendedContent() {
-
+        
         DispatchQueue.main.async {
-            
-//            print(self.knownForContent?.count)
-            
-            // TODO: If shownContentID's contains every ID in knownForContent, throw alert
 
             // loop through known for titles
             var index = 0
-            for knownForTitle in self.knownForContent! {
-                
-                print(self.knownForContent?.count)
+            for knownForTitle in self.knownForContent {
                 
                 // IMDB format
                 let imdbTitleIdStripped = knownForTitle.title?.id?.dropFirst(7).dropLast(1)
@@ -237,23 +246,27 @@ class DiscoverModel: ObservableObject {
                     // Set the observed recommended content
                     // knownForTitle is a single item in the list of results from an IMDB content cast ID
                     self.recommendedContent = knownForTitle.title
-
+                    
                     // Add recommended content to the already shown array
                     self.shownContentIds.append(imdbTitleIdStripped.map(String.init)!)
 
                     break
                 }
+                
+                // increment loop index
                 index += 1
-                if index == self.knownForContent!.count {
-                    self.noRecommendationsRemaining = true
-                }
             }
-
+            
             // set the displayed image data to new content image
             self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "", forView: "RecommendationView")
 
             // Notify view to remove loading view
             self.isLoading = false
+            
+            // If index has exceeded knownforcontent, throw error and navigate back to search
+            if index == self.knownForContent.count {
+                self.noRecommendationsRemaining = true
+            }
         }
     }
 }

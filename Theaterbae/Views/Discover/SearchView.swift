@@ -18,13 +18,13 @@ struct SearchView: View {
     
     var body: some View {
         
-        NavigationView {
+        NavigationView() {
          
             VStack {
                 
                 Text("Search a movie or show to get recommendations")
                 
-                TextField("The Office", text: $inputString)
+                TextField("Type in a movie or TV show", text: $inputString)
                     .padding()
                     .textFieldStyle(.roundedBorder)
                     .cornerRadius(20)
@@ -50,8 +50,11 @@ struct SearchView: View {
                 // Reset the search index
                 discoverModel.searchIndex = 0
                 
-                // Reset the search content
+                // Reset search content
                 discoverModel.searchContent = nil
+                
+                // Reset cast
+                discoverModel.searchCast = nil
             }
             .alert("Enter a movie or show title to find recommendations", isPresented: $alertEmptyTextFieldIsPresented) {
                 Button {

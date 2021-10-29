@@ -32,6 +32,10 @@ struct RecommendationView: View {
                 Text(discoverModel.recommendedContent?.title ?? "")
                     .font(.title)
                 
+                Text(String(discoverModel.recommendedContent?.year ?? 0))
+                    .opacity(0.67)
+                
+                
                 // Provides a new recommendation
                 Button {
                     // Get a new recommendation
@@ -66,13 +70,23 @@ struct RecommendationView: View {
         }
         .padding()
         .onAppear {
-            
-            discoverModel.getCastFromId(IMDBId: (discoverModel.searchContent?.id)!) {
-                discoverModel.getKnownForContentFromCast {
-                    // Get a new recommendation
-                    discoverModel.setRecommendedContent()
+            // If nothing has been set yet for the Recommendation view, run API calls and display results
+            if discoverModel.searchContent?.id == nil || discoverModel.searchCast == nil {
+                discoverModel.getCastFromId(IMDBId: (discoverModel.searchContent?.id)!) {
+                    discoverModel.getKnownForContentFromCast {
+                        // Get a new recommendation
+                        discoverModel.setRecommendedContent()
+                    }
                 }
+            } else {
+                // Use pre-set data to populate views
+                discoverModel.setRecommendedContent()
             }
+            
+        }
+        .onDisappear {
+            // clear known for content on navigating away
+            discoverModel.knownForContent = []
         }
         .alert("Added to Watch List", isPresented: $addedToWatchlistAlertIsPresented) {
             Button {} label: {
@@ -87,11 +101,6 @@ struct RecommendationView: View {
                 Text("Ok")
             }
         }
-//        .alert("No additional recommendations available", isPresented: $noRecommendationsAlertIsPresented) {
-//            Button {} label: {
-//                Text("Ok")
-//            }
-//        }
     }
 }
 

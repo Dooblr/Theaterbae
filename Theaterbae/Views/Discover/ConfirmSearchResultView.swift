@@ -29,16 +29,22 @@ struct ConfirmSearchResultView: View {
                     .resizable()
                     .scaledToFit()
                     .cornerRadius(10)
+                    .padding(.vertical)
     //                .redacted(reason: .placeholder)
+                
+                // Title/name
                 Text(discoverModel.searchContent?.title ?? "")
                     .font(.title)
-    //                .redacted(reason: SwiftUI.RedactionReasons.)
+                
+                // Year
+                Text(String(discoverModel.searchContent?.year ?? 0))
+                    .opacity(0.67)
                 
                 Spacer()
                 
                 VStack{
-                    Text("Recommend something new based on this content?")
-                    Text("Tap no to try another title").foregroundColor((Color.primary).opacity(0.33))
+                    Text("Recommend something new based on this content?").padding(.bottom)
+                    Text("Tap no to try another title").opacity(0.67)
                 }.padding()
                 
                 // Yes/No buttons
@@ -51,9 +57,7 @@ struct ConfirmSearchResultView: View {
                     
                     Button {
                         // Increment the search index to look for the next title in the list of resulting titles
-                        // TODO: fix getIMDBTitle() so it calls once and this button increments and reloads
                         discoverModel.searchIndex += 1
-//                        discoverModel.getIMDBTitle(title: title)
                         discoverModel.showNewSearchResult()
                     } label: {
                         CustomButton(text: "No", color: .red)
@@ -86,6 +90,8 @@ struct ConfirmSearchResultView: View {
                 showSearchView = true
             }
         }
+        // Hide navigation bar space
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
