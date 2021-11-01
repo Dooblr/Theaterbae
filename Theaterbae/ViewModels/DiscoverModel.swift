@@ -124,7 +124,9 @@ class DiscoverModel: ObservableObject {
             }
 
             // set the displayed image
-            self.setImageDataFromUrl(url: self.searchContent?.image?.imageUrl ?? "", forView: "ConfirmSearchResultView")
+            Task {
+                await self.setImageDataFromUrl(url: self.searchContent?.image?.imageUrl ?? "", forView: "ConfirmSearchResultView")
+            }
 
             // add searchId to shown content
             self.shownContentIds.append((self.searchContent?.id)!)
@@ -135,25 +137,26 @@ class DiscoverModel: ObservableObject {
     }
 
     // Takes a string and a view name and sets the
-    func setImageDataFromUrl(url:String, forView:String) {
+    func setImageDataFromUrl(url:String, forView:String) async {
 
         if let url = URL(string: url) {
-            let session = URLSession.shared
-            let dataTask = session.dataTask(with: url) { data, response, error in
-
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                
                 // Sets the image data based on the view name passed in
                 DispatchQueue.main.async {
                     switch forView{
                     case "ConfirmSearchResultView":
-                        self.confirmTitleImageData = data ?? Data()
+                        self.confirmTitleImageData = data
                     case "RecommendationView":
-                        self.recommendationImageData = data ?? Data()
+                        self.recommendationImageData = data
                     default:
                         break
                     }
                 }
+            } catch {
+                print(error)
             }
-            dataTask.resume()
         }
     }
 
@@ -261,7 +264,9 @@ class DiscoverModel: ObservableObject {
             }
             
             // set the displayed image data to new content image
-            self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "", forView: "RecommendationView")
+            Task {
+                await self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "", forView: "RecommendationView")
+            }
 
             // Notify view to remove loading view
             self.isLoading = false
