@@ -66,3 +66,16 @@ struct KnownForImage: Decodable {
     var url: String?
     var width: Int
 }
+
+struct PlotsSearch: Decodable {
+    // id
+    // base // general info
+    var plots:[Plot]?
+}
+
+struct Plot: Decodable {
+    // id
+    var text:String?
+}
+
+// 40 year old virgin IMDBtitlecode: tt0405422

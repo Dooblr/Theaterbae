@@ -13,13 +13,13 @@ struct WatchListView: View {
     
     var body: some View {
         NavigationView{
-            VStack{
+            LazyVStack{
                 List{
-                    ForEach(dataModel.savedEntities, id:\.self) { item in
-                        NavigationLink (destination: WatchListDetailView()) {
-                            HStack{
+                    ForEach(dataModel.savedEntities, id:\.self) { content in
+                        NavigationLink (destination: WatchListDetailView(content: content)) {
+                            HStack {
                                 
-                                let uiImage = UIImage(data: item.image ?? Data())
+                                let uiImage = UIImage(data: content.image ?? Data())
                                 Image(uiImage: uiImage ?? UIImage())
                                     .resizable()
                                     .scaledToFill()
@@ -28,7 +28,7 @@ struct WatchListView: View {
                                     .frame(height: UIScreen.main.bounds.height/12)
                                     .padding(.vertical)
                                     
-                                Text(item.name ?? "")
+                                Text(content.name ?? "")
                                     .font(.title2)
                                     .padding(.leading, UIScreen.main.bounds.width/15)
                                 

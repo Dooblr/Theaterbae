@@ -13,15 +13,15 @@ class DiscoverModel: ObservableObject {
     // Fetch CoreData for filtering recommendations
     init(){
         let dataModel = DataModel()
-        // Append every ID in the watchlist/coredata to prevent showing in recommendations
+        // Prevent showing in recommendations by appending every ID in the watchlist/coredata to shownContentIDs
         for entity in dataModel.savedEntities {
-            // Convert to IMDB format (e.g. tt0405422)
+            // Convert to IMDB format (e.g. /title/tt0405422/ to tt0405422)
             let slicedID = entity.id?.dropFirst(7).dropLast(1) ?? ""
             shownContentIds.append("\(slicedID)")
         }
     }
 
-    // MARK: - Search and Recommendation
+    // MARK: - Search
 
     // Array of IMDBTitles resulting from the auto-search
     var searchResults:IMDBSearch?
@@ -31,6 +31,8 @@ class DiscoverModel: ObservableObject {
 
     // Cast of the movie user entered
     var searchCast:[String]?
+    
+    // MARK: - Recommendation
 
     // Known for titles set via searchCast - type KnownForSearch is the json entrypoint for [KnownForTitle]
     @Published var knownForContent = [KnownForSearch]()
@@ -41,8 +43,13 @@ class DiscoverModel: ObservableObject {
     // Array to hold content that has been shown already
     var shownContentIds = [String]()
 
-    // Index for scrolling through imdb content results if user says 'Not my content'
+    // Index for scrolling through imdb content results if user says 'Not the right content I'm searching for' in ConfirmSearchResultView
     @Published var searchIndex = 0
+    
+    // Number of actors from which to pull KnownForContent (zero-based, so total = actorsToQuery + 1)
+    let actorsToQuery = 2
+    
+//    @Published var recommendationSu
 
     // MARK: - Image Data
 
@@ -53,7 +60,7 @@ class DiscoverModel: ObservableObject {
 
     // MARK: - View toggles
     
-    // Used to toggle loading view while fetching data
+    // Toggles loading views while fetching data
     @Published var isLoading: Bool?
 
     // MARK: - Alerts
@@ -63,10 +70,8 @@ class DiscoverModel: ObservableObject {
 
     // Toggle alert for no internet
     @Published var alertNoInternet = false
-    
-//    @Published var 
 
-    // Alert recommendation view that no more recommendations are available, and return to search view
+    // Alert recommendation view that no more recommendations are available, and navigate back to search view
     @Published var noRecommendationsRemaining = false
 
     // MARK: - IMDB API Methods
@@ -184,12 +189,12 @@ class DiscoverModel: ObservableObject {
         }).resume()
     }
 
-    // Uses the search cast and gets their "Known for" content
+    // After search cast has been set, this gets their "Known for" content and sets it to self.knownForContent
     func getKnownForContentFromCast(completion: @escaping () -> Void) {
 
         // Dispatch group to call completion after all API calls have finished
         let knownForDispatchGroup = DispatchGroup()
-        for index in 0...2 {
+        for index in 0...self.actorsToQuery {
             
             // Notify dispatch that api call has started
             knownForDispatchGroup.enter()
@@ -218,11 +223,9 @@ class DiscoverModel: ObservableObject {
                 }
             })
             dataTask.resume()
-            
-            
         }
         
-        // Run completion after all API calls have finished
+        // After all API calls have finished, run completion function
         knownForDispatchGroup.notify(queue: .main) {
             completion()
         }
@@ -268,5 +271,19 @@ class DiscoverModel: ObservableObject {
                 self.noRecommendationsRemaining = true
             }
         }
+    }
+    
+    static func getContentPlot(imdbContentID:String) async -> String {
+        
+        let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/title/get-plots?tconst=\(imdbContentID)")! as URL,
+                                                cachePolicy: .useProtocolCachePolicy,
+                                            timeoutInterval: 10.0)
+        request.httpMethod = "GET"
+        request.allHTTPHeaderFields = Constants.rapidApiHeaders
+        
+        let (data, _) = try! await URLSession.shared.data(for: request as URLRequest)
+        
+        let result = try! JSONDecoder().decode(PlotsSearch.self, from: data)
+        return (result.plots?.first?.text)!
     }
 }

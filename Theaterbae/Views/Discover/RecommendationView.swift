@@ -10,7 +10,7 @@ import SwiftUI
 struct RecommendationView: View {
     
     @EnvironmentObject var discoverModel:DiscoverModel
-    @EnvironmentObject var watchListModel:DataModel
+    @EnvironmentObject var dataModel:DataModel
     
     // Alerts
     @State var addedToWatchlistAlertIsPresented = false
@@ -48,10 +48,11 @@ struct RecommendationView: View {
                 
                 // Adds to watch list, loads a new recommendation, TODO: provides an alert
                 Button  {
-                    // Add to coredata
-                    watchListModel.addContent(id: discoverModel.recommendedContent?.id ?? "",
+                    // Add to coredata, plot is derived from the ID in addcontent
+                    dataModel.addContent(id: discoverModel.recommendedContent?.id ?? "",
                                               name: discoverModel.recommendedContent?.title ?? "",
-                                              image: discoverModel.recommendationImageData ?? Data())
+                                              image: discoverModel.recommendationImageData ?? Data(),
+                                              year: discoverModel.recommendedContent?.year ?? 0)
                     
                     // Get a new recommendation
                     discoverModel.setRecommendedContent()

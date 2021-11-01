@@ -35,12 +35,20 @@ class DataModel: ObservableObject {
         }
     }
     
-    func addContent(id: String, name: String, image: Data) {
+    func addContent(id:String, name:String, image:Data, year:Int) {
         
         let newContent = ContentEntity(context: container.viewContext)
-        newContent.id = id
+        
+        let strippedID = String(id.dropFirst(7).dropLast(1))
+        
+        newContent.id = strippedID
         newContent.name = name
         newContent.image = image
+        newContent.year = Int64(year)
+        Task{
+            newContent.plot = await DiscoverModel.getContentPlot(imdbContentID: strippedID)
+        }
+
         saveData()
     }
     
