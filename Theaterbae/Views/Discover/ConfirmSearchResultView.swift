@@ -73,14 +73,15 @@ struct ConfirmSearchResultView: View {
             
         }.onAppear {
             if discoverModel.searchContent == nil {
-                discoverModel.getIMDBTitle(title: title) {
+                Task{
+                    await discoverModel.getIMDBTitle(title: title)
                     discoverModel.showNewSearchResult()
                 }
             } else {
                 discoverModel.showNewSearchResult()
             }
-            
-        }.alert("End of available content", isPresented: $discoverModel.autoSearchAlertIsPresented) {
+        }
+        .alert("End of available content", isPresented: $discoverModel.autoSearchAlertIsPresented) {
 //            Alert(title: Text("Alert"), message: Text("End of results"), dismissButton: .default(Text("Ok")))
             Button("Ok") {
                 showSearchView = true

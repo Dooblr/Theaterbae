@@ -7,14 +7,15 @@
 
 import Foundation
 import CoreData
+import SwiftUI
 
 class DataModel: ObservableObject {
     
-    let container: NSPersistentContainer
+    let container = PersistenceController.shared.container
     @Published var savedEntities: [ContentEntity] = []
     
     init(){
-        container = NSPersistentContainer(name: "ContentData")
+//        container = NSPersistentContainer(name: "ContentData")
         container.loadPersistentStores { description, error in
             if let error = error {
                 print("error loading CoreData. \(error)")
@@ -25,7 +26,7 @@ class DataModel: ObservableObject {
         fetchContent()
     }
     
-    func fetchContent() {
+    func fetchContent()  {
         let request = NSFetchRequest<ContentEntity>(entityName: "ContentEntity")
         
         do {

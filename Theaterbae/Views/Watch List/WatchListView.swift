@@ -13,7 +13,7 @@ struct WatchListView: View {
     
     var body: some View {
         NavigationView{
-            LazyVStack{
+            VStack{
                 List{
                     ForEach(dataModel.savedEntities, id:\.self) { content in
                         NavigationLink (destination: WatchListDetailView(content: content)) {
@@ -41,6 +41,7 @@ struct WatchListView: View {
                 }
             }
             .navigationBarTitle("Watch List")
+            
         }
     }
 }

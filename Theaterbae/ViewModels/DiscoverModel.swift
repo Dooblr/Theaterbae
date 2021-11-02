@@ -7,17 +7,18 @@
 
 import Foundation
 import CoreData
+import SwiftUI
 
 class DiscoverModel: ObservableObject {
 
     // Fetch CoreData for filtering recommendations
-    init(){
+    init() {
         let dataModel = DataModel()
         // Prevent showing in recommendations by appending every ID in the watchlist/coredata to shownContentIDs
         for entity in dataModel.savedEntities {
             // Convert to IMDB format (e.g. /title/tt0405422/ to tt0405422)
-            let slicedID = entity.id?.dropFirst(7).dropLast(1) ?? ""
-            shownContentIds.append("\(slicedID)")
+//            let slicedID = entity.id
+            shownContentIds.append("\(entity.id!)")
         }
     }
 
@@ -35,7 +36,7 @@ class DiscoverModel: ObservableObject {
     // MARK: - Recommendation
 
     // Known for titles set via searchCast - type KnownForSearch is the json entrypoint for [KnownForTitle]
-    @Published var knownForContent = [KnownForSearch]()
+    @Published var knownForContent:[KnownForSearch] = []
 
     // New content from searched name
     @Published var recommendedContent:KnownForTitle?
@@ -46,7 +47,7 @@ class DiscoverModel: ObservableObject {
     // Index for scrolling through imdb content results if user says 'Not the right content I'm searching for' in ConfirmSearchResultView
     @Published var searchIndex = 0
     
-    // Number of actors from which to pull KnownForContent (zero-based, so total = actorsToQuery + 1)
+    // Number of actors from which to pull KnownForContent (zero-based so total = actorsToQuery + 1)
     let actorsToQuery = 2
     
 //    @Published var recommendationSu
@@ -78,39 +79,36 @@ class DiscoverModel: ObservableObject {
     // TODO: Update data methods to async await
 
     // Initial user-inputted search for an IMDB title, publishes the object, and adds id to shownContentIds
-    func getIMDBTitle (title:String, completion: @escaping () -> Void) {
+    func getIMDBTitle (title:String) async {
 
         // Notify view to display loading screen
         self.isLoading = true
 
         // remove whitespace and url incompatible characters
         let titleNoWhitespace = title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/auto-complete?q=\(titleNoWhitespace)")! as URL,
+        var request = URLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/auto-complete?q=\(titleNoWhitespace)")! as URL,
                                                 cachePolicy: .useProtocolCachePolicy,
                                             timeoutInterval: 10.0)
         request.httpMethod = "GET"
         request.allHTTPHeaderFields = Constants.rapidApiHeaders
 
-        let session = URLSession.shared
-        session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
-            if (error != nil) {
-                print(error!)
-                DispatchQueue.main.async {
-                    self.alertNoInternet = true
-                }
-            } else {
-                // Monitor HTTP response including usage reports
-                // let httpResponse = response as? HTTPURLResponse
-                // print(httpResponse)
-                do {
-                    let result = try JSONDecoder().decode(IMDBSearch.self, from: data!)
-                    self.searchResults = result
-                    completion()
-                } catch {
-                    print(error)
-                }
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request as URLRequest)
+            // Monitor HTTP response including usage reports
+            // let httpResponse = response as? HTTPURLResponse
+            // print(httpResponse)
+            do {
+                let result = try JSONDecoder().decode(IMDBSearch.self, from: data)
+                self.searchResults = result
+            } catch {
+                print(error)
             }
-        }).resume()
+        } catch {
+            print(error)
+            DispatchQueue.main.async {
+                self.alertNoInternet = true
+            }
+        }
     }
 
     func showNewSearchResult() {
@@ -213,7 +211,7 @@ class DiscoverModel: ObservableObject {
             let session = URLSession.shared
             let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
                 do {
-                    let result = try JSONDecoder().decode([KnownForSearch].self, from: data!)
+                    let result = try JSONDecoder().decode([KnownForSearch].self, from: data ?? Data())
                     for searchResult in result {
                         DispatchQueue.main.async {
                             self.knownForContent.append(searchResult)
@@ -247,6 +245,7 @@ class DiscoverModel: ObservableObject {
                 let imdbTitleId = imdbTitleIdStripped.map(String.init)!
 
                 // If the ID has not already been shown to the user, continue
+                // TODO: optional is interfering with contains check
                 if !self.shownContentIds.contains(imdbTitleId) {
 
                     // Set the observed recommended content
@@ -266,10 +265,10 @@ class DiscoverModel: ObservableObject {
             // set the displayed image data to new content image
             Task {
                 await self.setImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "", forView: "RecommendationView")
+                
+                // Notify view to remove loading view
+                self.isLoading = false
             }
-
-            // Notify view to remove loading view
-            self.isLoading = false
             
             // If index has exceeded knownforcontent, throw error and navigate back to search
             if index == self.knownForContent.count {

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RecommendationView: View {
     
+    // Access to viewmodels
     @EnvironmentObject var discoverModel:DiscoverModel
     @EnvironmentObject var dataModel:DataModel
     
@@ -84,10 +85,6 @@ struct RecommendationView: View {
                 discoverModel.setRecommendedContent()
             }
             
-        }
-        .onDisappear {
-            // clear known for content on navigating away
-            discoverModel.knownForContent = []
         }
         .alert("Added to Watch List", isPresented: $addedToWatchlistAlertIsPresented) {
             Button {} label: {
