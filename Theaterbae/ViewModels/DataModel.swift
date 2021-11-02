@@ -38,14 +38,18 @@ class DataModel: ObservableObject {
     
     func addContent(id:String, name:String, image:Data, year:Int) {
         
+        // Create a new data entity
         let newContent = ContentEntity(context: container.viewContext)
         
+        // remove /title/.../
         let strippedID = String(id.dropFirst(7).dropLast(1))
         
+        // Set data values
         newContent.id = strippedID
         newContent.name = name
         newContent.image = image
         newContent.year = Int64(year)
+        // Asynchronously run the plot API call with ID
         Task{
             newContent.plot = await DiscoverModel.getContentPlot(imdbContentID: strippedID)
         }

@@ -38,14 +38,14 @@ struct WatchListDetailView: View {
                     .padding(.bottom)
                 
                 // Summary
-                Text(content.plot ?? "")
-            
-            
+                if content.plot != nil {
+                    Text(content.plot!)
+                        .padding()
+                } else {
+                    Text("No plot or summary found")
+                }
             }
             .navigationTitle("Details")
-            .onAppear {
-    //            discoverModel.getContentPlot()
-            }
         }
     }
 }

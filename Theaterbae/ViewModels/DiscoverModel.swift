@@ -49,8 +49,6 @@ class DiscoverModel: ObservableObject {
     
     // Number of actors from which to pull KnownForContent (zero-based so total = actorsToQuery + 1)
     let actorsToQuery = 2
-    
-//    @Published var recommendationSu
 
     // MARK: - Image Data
 
