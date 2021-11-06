@@ -30,12 +30,11 @@ struct WatchListDetailView: View {
                 // Name
                 Text(content.name ?? "")
                     .font(.title2)
-                    .padding(.bottom)
+                    .padding(.bottom, 10)
                 
                 // Year
                 Text("\(content.year)".filter { $0 != "," })
                     .opacity(0.67)
-                    .padding(.bottom)
                 
                 // Summary
                 if content.plot != nil {

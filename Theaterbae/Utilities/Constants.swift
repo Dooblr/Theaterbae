@@ -9,13 +9,13 @@ import Foundation
 
 struct Constants {
     
-    // API Keys
-    static let privateApiKey = "k_a1i0usrw"
-    static let publicApiKey = "pk_5yzngw9hxddjnlpt6"
+    static let privateApiKey = ProcessInfo.processInfo.environment["privateApiKey"]
+    static let publicApiKey = ProcessInfo.processInfo.environment["publicApiKey"]
     
-    // IMDB RapidAPI GET request headers
-    static let rapidApiHeaders = [
-        "x-rapidapi-host": "imdb8.p.rapidapi.com",
-        "x-rapidapi-key": "c5e55581dcmsh765de9634a8dff2p144394jsn3456c03b3062"
-    ]
+    // IMDB RapidAPI request headers
+    static let rapidApiHost = ProcessInfo.processInfo.environment["x-rapidapi-host"]
+    static let rapidApiKey = ProcessInfo.processInfo.environment["x-rapidapi-key"]
+    
+    static let rapidApiHeaders = ["x-rapidapi-host": rapidApiHost!, "x-rapidapi-key": rapidApiKey!]
+    
 }
