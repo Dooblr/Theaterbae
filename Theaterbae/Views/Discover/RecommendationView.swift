@@ -47,23 +47,37 @@ struct RecommendationView: View {
                 
                 Spacer()
                 
-                // Adds to watch list, loads a new recommendation, TODO: provides an alert
-                Button  {
-                    // Add to coredata, plot is derived from the ID in addcontent
-                    dataModel.addContent(id: discoverModel.recommendedContent?.id ?? "",
-                                              name: discoverModel.recommendedContent?.title ?? "",
-                                              image: discoverModel.recommendationImageData ?? Data(),
-                                              year: discoverModel.recommendedContent?.year ?? 0)
-                    
-                    // Get a new recommendation
-                    discoverModel.setRecommendedContent()
-                    
-                    // Alert that it has been saved
-                    addedToWatchlistAlertIsPresented = true
-                } label: {
-                    CustomButton(text:"Add to watch list", color:.green)
-                }
+                HStack {
+                   
+                    // Revert back button
+                    Button {
+                        discoverModel.revertRecommendedContent()
+                    } label: {
+                        HStack {
+                            CustomButton(text:"Back", color:.yellow)
+                        }
+                    }
 
+                    
+                    // Adds to coredata watch list, loads a new recommendation
+                    Button  {
+                        // Add to coredata, plot is derived from the ID in addcontent
+                        dataModel.addContent(id: discoverModel.recommendedContent?.id ?? "",
+                                                  name: discoverModel.recommendedContent?.title ?? "",
+                                                  image: discoverModel.recommendationImageData ?? Data(),
+                                                  year: discoverModel.recommendedContent?.year ?? 0)
+                        
+                        // Get a new recommendation
+                        discoverModel.setRecommendedContent()
+                        
+                        // Alert that it has been saved
+                        addedToWatchlistAlertIsPresented = true
+                    } label: {
+                        HStack {
+                            CustomButton(text:"Add to watch list", color:.green)
+                        }
+                    }
+                }
             } else {
                 Text("Loading...")
             }
@@ -84,7 +98,6 @@ struct RecommendationView: View {
                 // Use pre-set data to populate views
                 discoverModel.setRecommendedContent()
             }
-            
         }
         .alert("Added to Watch List", isPresented: $addedToWatchlistAlertIsPresented) {
             Button {} label: {

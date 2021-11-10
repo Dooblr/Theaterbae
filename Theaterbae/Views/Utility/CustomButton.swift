@@ -24,6 +24,7 @@ struct CustomButton: View {
             Text(text)
                 // Text color
                 .foregroundColor(Color.white)
+                .shadow(color: .gray, radius: 5, x: 0, y: 5)
         }
     }
 }

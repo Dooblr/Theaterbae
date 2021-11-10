@@ -10,17 +10,13 @@ import CoreData
 import SwiftUI
 
 class DiscoverModel: ObservableObject {
-    
-//    var rapidApiHeaders:[String:String]?
 
     // Fetch CoreData for filtering recommendations
     init() {
-        
         let dataModel = DataModel()
         // Prevent showing in recommendations by appending every ID in the watchlist/coredata to shownContentIDs
         for entity in dataModel.savedEntities {
             // Convert to IMDB format (e.g. /title/tt0405422/ to tt0405422)
-//            let slicedID = entity.id
             shownContentIds.append("\(entity.id!)")
         }
     }
@@ -137,6 +133,8 @@ class DiscoverModel: ObservableObject {
 
     // Takes a string and a view name and sets the
     func setImageDataFromUrl(url:String, forView:String) async {
+        
+        self.isLoading = true
 
         if let url = URL(string: url) {
             do {
@@ -152,6 +150,7 @@ class DiscoverModel: ObservableObject {
                     default:
                         break
                     }
+                    self.isLoading = false
                 }
             } catch {
                 print(error)
@@ -246,7 +245,6 @@ class DiscoverModel: ObservableObject {
                 let imdbTitleId = imdbTitleIdStripped.map(String.init)!
 
                 // If the ID has not already been shown to the user, continue
-                // TODO: optional is interfering with contains check
                 if !self.shownContentIds.contains(imdbTitleId) {
 
                     // Set the observed recommended content
@@ -254,7 +252,7 @@ class DiscoverModel: ObservableObject {
                     self.recommendedContent = knownForTitle.title
                     
                     // Add recommended content to the already shown array
-                    self.shownContentIds.append(imdbTitleIdStripped.map(String.init)!)
+                    self.shownContentIds.append(imdbTitleId)
 
                     break
                 }
@@ -278,6 +276,21 @@ class DiscoverModel: ObservableObject {
         }
     }
     
+    // Return to previous content
+    func revertRecommendedContent() {
+        // Remove 2 because recommendationview will reload and setRecommendedContent will re-add the previous content we're trying to return to
+        self.shownContentIds.removeLast(2)
+        // Force-remove the search id from the content already shown
+        let subString = self.searchContent?.id?.dropFirst(7).dropLast(1)
+        let searchId = subString.map(String.init)!
+        
+        // If the original search has been removed, re-add it to showncontentIDs
+        if !self.shownContentIds.contains(searchId) {
+            self.shownContentIds.append(searchId)
+        }
+        self.setRecommendedContent()
+    }
+    
     static func getContentPlot(imdbContentID:String) async -> String {
         
         let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/title/get-plots?tconst=\(imdbContentID)")! as URL,
@@ -291,4 +304,5 @@ class DiscoverModel: ObservableObject {
         let result = try! JSONDecoder().decode(PlotsSearch.self, from: data)
         return (result.plots?.first?.text)!
     }
+    
 }
