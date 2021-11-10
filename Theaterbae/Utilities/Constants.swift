@@ -1,21 +1,34 @@
 //
 //  Constants.swift
-//  FlickFind
+//  Theaterbae
 //
 //  Created by admin on 9/12/21.
 //
 
 import Foundation
+import Firebase
 
 struct Constants {
     
-    static let privateApiKey = ProcessInfo.processInfo.environment["privateApiKey"]
-    static let publicApiKey = ProcessInfo.processInfo.environment["publicApiKey"]
+    static var rapidApiHostHeader = "x-rapidapi-host"
+    static var rapidApiKeyHeader = "x-rapidapi-key"
     
-    // IMDB RapidAPI request headers
-    static let rapidApiHost = ProcessInfo.processInfo.environment["x-rapidapi-host"]
-    static let rapidApiKey = ProcessInfo.processInfo.environment["x-rapidapi-key"]
+    static var rapidApiHostValue:String?
+    static var rapidApiKeyValue:String?
     
-    static let rapidApiHeaders = ["x-rapidapi-host": rapidApiHost!, "x-rapidapi-key": rapidApiKey!]
+    // Combined value dictionary
+    static var rapidApiHeaders:[String:String]?
     
+    // Accesses Firebase to retrieve API keys
+    init() {
+        FirebaseApp.configure()
+        let db = Firestore.firestore()
+        let docRef = db.collection("rapidapi").document("0")
+        docRef.getDocument { (document, error) in
+            Constants.rapidApiHostValue = document!.data()![Constants.rapidApiHostHeader] as? String
+            Constants.rapidApiKeyValue = document!.data()![Constants.rapidApiKeyHeader] as? String
+            Constants.rapidApiHeaders = [Constants.rapidApiHostHeader:Constants.rapidApiHostValue!,
+                                         Constants.rapidApiKeyHeader:Constants.rapidApiKeyValue!]
+        }
+    }
 }

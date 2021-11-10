@@ -1,6 +1,6 @@
 //
 //  ContentModel.swift
-//  FlickFind
+//  Theaterbae
 //
 //  Created by admin on 9/12/21.
 //
@@ -10,12 +10,11 @@ import CoreData
 import SwiftUI
 
 class DiscoverModel: ObservableObject {
+    
+//    var rapidApiHeaders:[String:String]?
 
     // Fetch CoreData for filtering recommendations
     init() {
-        
-//        print("printing headers")
-//        print(ProcessInfo.processInfo.environment["rapidApiHeaders"])
         
         let dataModel = DataModel()
         // Prevent showing in recommendations by appending every ID in the watchlist/coredata to shownContentIDs
