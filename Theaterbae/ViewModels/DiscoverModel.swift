@@ -25,12 +25,14 @@ class DiscoverModel: ObservableObject {
 
     // Array of IMDBTitles resulting from the auto-search
     var searchResults:IMDBSearch?
+    var imdbSearchResults:[SearchResult]?
 
     // Single IMDB title object used to display initial search
     @Published var searchContent:IMDBTitle?
+    @Published var imdbSearchContent:SearchResult?
 
     // Cast of the movie user entered
-    var searchCast:[String]?
+    var searchCast:[String] = []
     
     // MARK: - Recommendation
 
@@ -65,73 +67,63 @@ class DiscoverModel: ObservableObject {
 
     // Toggle to alert the user when they have reached the end of the IMDB auto-search results
     @Published var autoSearchAlertIsPresented = false
-
     // Toggle alert for no internet
     @Published var alertNoInternet = false
-
     // Alert recommendation view that no more recommendations are available, and navigate back to search view
     @Published var noRecommendationsRemaining = false
 
     // MARK: - IMDB API Methods
-    // TODO: Update data methods to async await
-
-    // Initial user-inputted search for an IMDB title, publishes the object, and adds id to shownContentIds
-    func getIMDBTitle (title:String) async {
-
-        // Notify view to display loading screen
-        self.isLoading = true
-
-        // remove whitespace and url incompatible characters
+    
+    // Takes user input from SearchView
+    func searchAll(title:String) async {
         let titleNoWhitespace = title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        var request = URLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/auto-complete?q=\(titleNoWhitespace)")! as URL,
-                                                cachePolicy: .useProtocolCachePolicy,
-                                            timeoutInterval: 10.0)
+        var request = URLRequest(url: URL(string: "https://imdb-api.com/en/API/SearchAll/\(Constants.imdbApiKey ?? "")/\(titleNoWhitespace)")!,
+                                 cachePolicy: .useProtocolCachePolicy,
+                                 timeoutInterval: Double.infinity)
         request.httpMethod = "GET"
-        request.allHTTPHeaderFields = Constants.rapidApiHeaders
-
+        
         do {
             let (data, _) = try await URLSession.shared.data(for: request as URLRequest)
-            // Monitor HTTP response including usage reports
-            // let httpResponse = response as? HTTPURLResponse
-            // print(httpResponse)
             do {
-                let result = try JSONDecoder().decode(IMDBSearch.self, from: data)
-                self.searchResults = result
+                let result = try JSONDecoder().decode(SearchAll.self, from: data)
+                self.imdbSearchResults = result.results
             } catch {
+                print("failed to parse JSON. Error: ")
                 print(error)
             }
         } catch {
+            print("failed to search. Error: ")
             print(error)
             DispatchQueue.main.async {
                 self.alertNoInternet = true
             }
         }
     }
-
-    func showNewSearchResult() {
+    
+    func showNewImdbSearchResult() {
         DispatchQueue.main.async {
 
             // set selected content to returned result
-            if self.searchIndex < self.searchResults!.d.count {
-                self.searchContent = self.searchResults!.d[self.searchIndex]
+            if self.searchIndex < self.imdbSearchResults!.count {
+                self.imdbSearchContent = self.imdbSearchResults![self.searchIndex]
             } else {
                 // There are no other results
             }
 
             // set the displayed image
             Task {
-                await self.setImageDataFromUrl(url: self.searchContent?.image?.imageUrl ?? "", forView: "ConfirmSearchResultView")
+                await self.setImageDataFromUrl(url: self.imdbSearchContent!.image, forView: "ConfirmSearchResultView")
             }
 
             // add searchId to shown content
-            self.shownContentIds.append((self.searchContent?.id)!)
+            self.shownContentIds.append((self.imdbSearchContent?.id)!)
 
             // Inform views that loading has completed
             self.isLoading = false
         }
     }
-
-    // Takes a string and a view name and sets the
+    
+    // Takes a string and a view name and sets the image
     func setImageDataFromUrl(url:String, forView:String) async {
         
         self.isLoading = true
@@ -157,38 +149,65 @@ class DiscoverModel: ObservableObject {
             }
         }
     }
-
-    // Takes an IMDB ID and gets the search cast, then gets content from said cast
-    func getCastFromId(IMDBId: String, completion: @escaping () -> Void) {
-
-        // Change view to loading screen
-        self.isLoading = true
-
-        // Clear previously set recommended image data
-        self.recommendationImageData = Data()
-
-        // Runs IMDB's get-top-cast call, and on completion gets the content from the cast
-        let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/title/get-top-cast?tconst=\(IMDBId)")! as URL,
-                                                cachePolicy: .useProtocolCachePolicy,
-                                            timeoutInterval: 10.0)
-            request.httpMethod = "GET"
-            request.allHTTPHeaderFields = Constants.rapidApiHeaders
-
-        let session = URLSession.shared
-        session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
-            if (error != nil) {
-                print(error!)
-            } else {
-                do {
-                    let result = try JSONDecoder().decode([String].self, from: data!)
-                    self.searchCast = result
-                    completion()
-                } catch {
-                    print(error)
+    
+    // Takes an IMDB ID and gets the full list of information for that title. Currently only using to set cast data
+    func getFullTitleInfo(id: String) async {
+        
+        var request = URLRequest(url: URL(string: "https://imdb-api.com/en/API/Title/\(Constants.imdbApiKey ?? "")/\(id)/FullActor,FullCast,Posters,Images,Trailer,Ratings,")!,
+                                 cachePolicy: .useProtocolCachePolicy,
+                                 timeoutInterval: Double.infinity)
+        request.httpMethod = "GET"
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request as URLRequest)
+            do {
+                let result = try JSONDecoder().decode(Title.self, from: data)
+                for star in result.starList! {
+                    self.searchCast.append(star.id)
                 }
+            } catch {
+                print("failed to parse JSON. Error: ")
+                print(error)
             }
-        }).resume()
+        } catch {
+            print("failed to get full title. Error: ")
+            print(error)
+        }
     }
+    
+    // MARK: - RapidAPI IMDB Methods
+
+    // Takes an IMDB ID and gets the search cast
+//    func getCastFromId(IMDBId: String, completion: @escaping () -> Void) {
+//
+//        // Change view to loading screen
+//        self.isLoading = true
+//
+//        // Clear previously set recommended image data
+//        self.recommendationImageData = Data()
+//
+//        // Runs IMDB's get-top-cast call, and on completion gets the content from the cast
+//        let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/title/get-top-cast?tconst=\(IMDBId)")! as URL,
+//                                                cachePolicy: .useProtocolCachePolicy,
+//                                            timeoutInterval: 10.0)
+//            request.httpMethod = "GET"
+//            request.allHTTPHeaderFields = Constants.rapidApiHeaders
+//
+//        let session = URLSession.shared
+//        session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+//            if (error != nil) {
+//                print(error!)
+//            } else {
+//                do {
+//                    let result = try JSONDecoder().decode([String].self, from: data!)
+//                    self.searchCast = result
+//                    completion()
+//                } catch {
+//                    print(error)
+//                }
+//            }
+//        }).resume()
+//    }
 
     // After search cast has been set, this gets their "Known for" content and sets it to self.knownForContent
     func getKnownForContentFromCast(completion: @escaping () -> Void) {
@@ -199,8 +218,9 @@ class DiscoverModel: ObservableObject {
             
             // Notify dispatch that api call has started
             knownForDispatchGroup.enter()
+            
             // format to IMDB ID name code
-            let ImdbCastID = self.searchCast![index].dropFirst(6).dropLast(1)
+            let ImdbCastID = self.searchCast[index]
 
             let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/actors/get-known-for?nconst=\(ImdbCastID)")! as URL,
                                                     cachePolicy: .useProtocolCachePolicy,
@@ -280,9 +300,8 @@ class DiscoverModel: ObservableObject {
     func revertRecommendedContent() {
         // Remove 2 because recommendationview will reload and setRecommendedContent will re-add the previous content we're trying to return to
         self.shownContentIds.removeLast(2)
-        // Force-remove the search id from the content already shown
-        let subString = self.searchContent?.id?.dropFirst(7).dropLast(1)
-        let searchId = subString.map(String.init)!
+        
+        let searchId = (self.imdbSearchContent?.id)!
         
         // If the original search has been removed, re-add it to showncontentIDs
         if !self.shownContentIds.contains(searchId) {

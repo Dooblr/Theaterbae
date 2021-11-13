@@ -19,6 +19,8 @@ struct Constants {
     // Combined value dictionary
     static var rapidApiHeaders:[String:String]?
     
+    static var imdbApiKey:String?
+    
     // Accesses Firebase to retrieve API keys
     init() {
         FirebaseApp.configure()
@@ -29,6 +31,11 @@ struct Constants {
             Constants.rapidApiKeyValue = document!.data()![Constants.rapidApiKeyHeader] as? String
             Constants.rapidApiHeaders = [Constants.rapidApiHostHeader:Constants.rapidApiHostValue!,
                                          Constants.rapidApiKeyHeader:Constants.rapidApiKeyValue!]
+        }
+        
+        let docRef2 = db.collection("imdbAPI").document("0")
+        docRef2.getDocument { (document, error) in
+            Constants.imdbApiKey = document!.data()!["imdb_api_key"] as? String
         }
     }
 }

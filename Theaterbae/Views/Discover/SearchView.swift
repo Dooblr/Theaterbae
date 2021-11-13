@@ -51,10 +51,10 @@ struct SearchView: View {
                 discoverModel.searchIndex = 0
                 
                 // Reset search content
-                discoverModel.searchContent = nil
+                discoverModel.imdbSearchContent = nil
                 
                 // Reset cast
-                discoverModel.searchCast = nil
+                discoverModel.searchCast = []
             }
             .alert("Enter a movie or show title to find recommendations", isPresented: $alertEmptyTextFieldIsPresented) {
                 Button {

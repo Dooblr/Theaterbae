@@ -33,12 +33,12 @@ struct ConfirmSearchResultView: View {
     //                .redacted(reason: .placeholder)
                 
                 // Title/name
-                Text(discoverModel.searchContent?.title ?? "")
+                Text(discoverModel.imdbSearchContent?.title ?? "")
                     .font(.title)
                 
                 // Year
-                Text(String(discoverModel.searchContent?.year ?? 0))
-                    .opacity(0.67)
+//                Text(String(discoverModel.searchContent?.year ?? 0))
+//                    .opacity(0.67)
                 
                 Spacer()
                 
@@ -56,9 +56,9 @@ struct ConfirmSearchResultView: View {
                     }
                     
                     Button {
-                        // Increment the search index to look for the next title in the list of resulting titles
+                        // Increment the search index to get the next title
                         discoverModel.searchIndex += 1
-                        discoverModel.showNewSearchResult()
+                        discoverModel.showNewImdbSearchResult()
                     } label: {
                         CustomButton(text: "No", color: .red)
                     }
@@ -72,13 +72,13 @@ struct ConfirmSearchResultView: View {
             NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: $showSearchView) { EmptyView() }
             
         }.onAppear {
-            if discoverModel.searchContent == nil {
+            if discoverModel.imdbSearchContent == nil {
                 Task{
-                    await discoverModel.getIMDBTitle(title: title)
-                    discoverModel.showNewSearchResult()
+                    await discoverModel.searchAll(title: title)
+                    discoverModel.showNewImdbSearchResult()
                 }
             } else {
-                discoverModel.showNewSearchResult()
+                discoverModel.showNewImdbSearchResult()
             }
         }
         .alert("End of available content", isPresented: $discoverModel.autoSearchAlertIsPresented) {

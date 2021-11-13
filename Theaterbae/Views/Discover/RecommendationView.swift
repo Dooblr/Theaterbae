@@ -85,14 +85,13 @@ struct RecommendationView: View {
             NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: $showSearchView) { EmptyView() }
         }
         .padding()
-        .onAppear {
+        .task {
             // If nothing has been set yet for the Recommendation view, run API calls and display results
-            if discoverModel.searchContent?.id == nil || discoverModel.searchCast == nil {
-                discoverModel.getCastFromId(IMDBId: (discoverModel.searchContent?.id)!) {
-                    discoverModel.getKnownForContentFromCast {
-                        // Get a new recommendation
-                        discoverModel.setRecommendedContent()
-                    }
+            if discoverModel.imdbSearchContent?.id == nil || discoverModel.searchCast == [] {
+                await discoverModel.getFullTitleInfo(id: (discoverModel.imdbSearchContent?.id)!)
+                discoverModel.getKnownForContentFromCast {
+                    // Get a new recommendation
+                    discoverModel.setRecommendedContent()
                 }
             } else {
                 // Use pre-set data to populate views
