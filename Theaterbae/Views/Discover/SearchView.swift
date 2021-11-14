@@ -45,16 +45,21 @@ struct SearchView: View {
             .padding()
             .navigationTitle("Discover")
             .onAppear {
+                
+                // Clear the input string
                 inputString = ""
                 
-                // Reset the search index
+                // Clear search index
                 discoverModel.searchIndex = 0
                 
-                // Reset search content
+                // Clear search content
                 discoverModel.imdbSearchContent = nil
                 
-                // Reset cast
+                // Clear cast list
                 discoverModel.searchCast = []
+                
+                // Clear known for content
+                discoverModel.knownForContent = []
             }
             .alert("Enter a movie or show title to find recommendations", isPresented: $alertEmptyTextFieldIsPresented) {
                 Button {

@@ -37,7 +37,7 @@ class DiscoverModel: ObservableObject {
     // MARK: - Recommendation
 
     // Known for titles set via searchCast - type KnownForSearch is the json entrypoint for [KnownForTitle]
-    @Published var knownForContent:[KnownForSearch] = []
+    @Published var knownForContent:[KnownForTitle] = []
 
     // New content from searched name
     @Published var recommendedContent:KnownForTitle?
@@ -234,12 +234,13 @@ class DiscoverModel: ObservableObject {
                     let result = try JSONDecoder().decode([KnownForSearch].self, from: data ?? Data())
                     for searchResult in result {
                         DispatchQueue.main.async {
-                            self.knownForContent.append(searchResult)
+                            self.knownForContent.append(searchResult.title)
                         }
                     }
                     // Notify dispatch that API call has finished
                     knownForDispatchGroup.leave()
                 } catch {
+                    print("failed to parse JSON. Error: ")
                     print(error)
                 }
             })
@@ -261,15 +262,15 @@ class DiscoverModel: ObservableObject {
             for knownForTitle in self.knownForContent {
                 
                 // IMDB format
-                let imdbTitleIdStripped = knownForTitle.title?.id?.dropFirst(7).dropLast(1)
-                let imdbTitleId = imdbTitleIdStripped.map(String.init)!
+                let imdbTitleIdStripped = knownForTitle.id!.dropFirst(7).dropLast(1)
+                let imdbTitleId = String(imdbTitleIdStripped)
 
                 // If the ID has not already been shown to the user, continue
                 if !self.shownContentIds.contains(imdbTitleId) {
 
                     // Set the observed recommended content
                     // knownForTitle is a single item in the list of results from an IMDB content cast ID
-                    self.recommendedContent = knownForTitle.title
+                    self.recommendedContent = knownForTitle
                     
                     // Add recommended content to the already shown array
                     self.shownContentIds.append(imdbTitleId)

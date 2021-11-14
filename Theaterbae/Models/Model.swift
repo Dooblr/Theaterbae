@@ -46,7 +46,8 @@ struct IMDBImage: Decodable {
 }
 
 struct KnownForSearch: Decodable {
-    var title :KnownForTitle?
+    var title :KnownForTitle
+    var imdbRating: Double
     // summary
     // categories
     // wheretowatch
