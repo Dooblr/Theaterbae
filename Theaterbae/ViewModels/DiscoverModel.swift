@@ -21,18 +21,18 @@ class DiscoverModel: ObservableObject {
         }
     }
 
+    
     // MARK: - Search
 
-    // Array of IMDBTitles resulting from the auto-search
-    var searchResults:IMDBSearch?
+    // Array of IMDBTitles resulting from IMDB Search All
     var imdbSearchResults:[SearchResult]?
 
-    // Single IMDB title object used to display initial search
-    @Published var searchContent:IMDBTitle?
+    // Single IMDB title object published for use in confirmSeachView
     @Published var imdbSearchContent:SearchResult?
 
-    // Cast of the movie user entered
+    // Stores an array of cast members
     var searchCast:[String] = []
+    
     
     // MARK: - Recommendation
 
@@ -51,6 +51,7 @@ class DiscoverModel: ObservableObject {
     // Number of actors from which to pull KnownForContent (zero-based so total = actorsToQuery + 1)
     let actorsToQuery = 2
 
+    
     // MARK: - Image Data
 
     // ConfirmSearchResultView image
@@ -58,11 +59,13 @@ class DiscoverModel: ObservableObject {
     // RecommendationView image
     @Published var recommendationImageData:Data?
 
+    
     // MARK: - View toggles
     
     // Toggles loading views while fetching data
     @Published var isLoading: Bool?
 
+    
     // MARK: - Alerts
 
     // Toggle to alert the user when they have reached the end of the IMDB auto-search results
@@ -72,12 +75,13 @@ class DiscoverModel: ObservableObject {
     // Alert recommendation view that no more recommendations are available, and navigate back to search view
     @Published var noRecommendationsRemaining = false
 
+    
     // MARK: - IMDB API Methods
     
     // Takes user input from SearchView
     func searchAll(title:String) async {
         let titleNoWhitespace = title.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        var request = URLRequest(url: URL(string: "https://imdb-api.com/en/API/SearchAll/\(Constants.imdbApiKey ?? "")/\(titleNoWhitespace)")!,
+        var request = URLRequest(url: URL(string: "https://imdb-api.com/en/API/SearchAll/\(API_Keys.imdbApiKey)/\(titleNoWhitespace)")!,
                                  cachePolicy: .useProtocolCachePolicy,
                                  timeoutInterval: Double.infinity)
         request.httpMethod = "GET"
@@ -153,7 +157,7 @@ class DiscoverModel: ObservableObject {
     // Takes an IMDB ID and gets the full list of information for that title. Currently only using to set cast data
     func getFullTitleInfo(id: String) async {
         
-        var request = URLRequest(url: URL(string: "https://imdb-api.com/en/API/Title/\(Constants.imdbApiKey ?? "")/\(id)/FullActor,FullCast,Posters,Images,Trailer,Ratings,")!,
+        var request = URLRequest(url: URL(string: "https://imdb-api.com/en/API/Title/\(API_Keys.imdbApiKey)/\(id)/FullActor,FullCast,Posters,Images,Trailer,Ratings,")!,
                                  cachePolicy: .useProtocolCachePolicy,
                                  timeoutInterval: Double.infinity)
         request.httpMethod = "GET"
@@ -176,48 +180,13 @@ class DiscoverModel: ObservableObject {
     }
     
     // MARK: - RapidAPI IMDB Methods
-
-    // Takes an IMDB ID and gets the search cast
-//    func getCastFromId(IMDBId: String, completion: @escaping () -> Void) {
-//
-//        // Change view to loading screen
-//        self.isLoading = true
-//
-//        // Clear previously set recommended image data
-//        self.recommendationImageData = Data()
-//
-//        // Runs IMDB's get-top-cast call, and on completion gets the content from the cast
-//        let request = NSMutableURLRequest(url: NSURL(string: "https://imdb8.p.rapidapi.com/title/get-top-cast?tconst=\(IMDBId)")! as URL,
-//                                                cachePolicy: .useProtocolCachePolicy,
-//                                            timeoutInterval: 10.0)
-//            request.httpMethod = "GET"
-//            request.allHTTPHeaderFields = Constants.rapidApiHeaders
-//
-//        let session = URLSession.shared
-//        session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
-//            if (error != nil) {
-//                print(error!)
-//            } else {
-//                do {
-//                    let result = try JSONDecoder().decode([String].self, from: data!)
-//                    self.searchCast = result
-//                    completion()
-//                } catch {
-//                    print(error)
-//                }
-//            }
-//        }).resume()
-//    }
-
-    // After search cast has been set, this gets their "Known for" content and sets it to self.knownForContent
-    func getKnownForContentFromCast(completion: @escaping () -> Void) {
+    
+    func getKnownForContent() async {
+        
+        self.isLoading = true
 
         // Dispatch group to call completion after all API calls have finished
-        let knownForDispatchGroup = DispatchGroup()
         for index in 0...self.actorsToQuery {
-            
-            // Notify dispatch that api call has started
-            knownForDispatchGroup.enter()
             
             // format to IMDB ID name code
             let ImdbCastID = self.searchCast[index]
@@ -226,30 +195,25 @@ class DiscoverModel: ObservableObject {
                                                     cachePolicy: .useProtocolCachePolicy,
                                                 timeoutInterval: 10.0)
             request.httpMethod = "GET"
-            request.allHTTPHeaderFields = Constants.rapidApiHeaders
+            request.allHTTPHeaderFields = API_Keys.rapidApiHeaders
 
-            let session = URLSession.shared
-            let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
-                do {
-                    let result = try JSONDecoder().decode([KnownForSearch].self, from: data ?? Data())
-                    for searchResult in result {
-                        DispatchQueue.main.async {
-                            self.knownForContent.append(searchResult.title)
-                        }
+            let (data, _) = try! await URLSession.shared.data(for: request as URLRequest)
+            do {
+                let result = try JSONDecoder().decode([KnownForSearch].self, from: data)
+                for searchResult in result {
+                    DispatchQueue.main.async {
+                        self.knownForContent.append(searchResult.title)
                     }
-                    // Notify dispatch that API call has finished
-                    knownForDispatchGroup.leave()
-                } catch {
-                    print("failed to parse JSON. Error: ")
-                    print(error)
                 }
-            })
-            dataTask.resume()
+                
+            } catch {
+                print("failed to parse JSON. Error: ")
+                print(error)
+            }
         }
         
-        // After all API calls have finished, run completion function
-        knownForDispatchGroup.notify(queue: .main) {
-            completion()
+        DispatchQueue.main.async {
+            self.isLoading = false
         }
     }
 
@@ -317,7 +281,7 @@ class DiscoverModel: ObservableObject {
                                                 cachePolicy: .useProtocolCachePolicy,
                                             timeoutInterval: 10.0)
         request.httpMethod = "GET"
-        request.allHTTPHeaderFields = Constants.rapidApiHeaders
+        request.allHTTPHeaderFields = API_Keys.rapidApiHeaders
         
         let (data, _) = try! await URLSession.shared.data(for: request as URLRequest)
         

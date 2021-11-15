@@ -29,7 +29,7 @@ struct SearchView: View {
                     .textFieldStyle(.roundedBorder)
                     .cornerRadius(20)
                 
-                NavigationLink(destination: ConfirmSearchResultView(title:inputString)) {
+                NavigationLink(destination: ConfirmSearchView(title:inputString)) {
                     CustomButton(text:"Search", color: .blue)
                 }
                 .disabled(inputString == "")

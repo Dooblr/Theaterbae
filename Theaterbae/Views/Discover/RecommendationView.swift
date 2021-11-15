@@ -89,10 +89,8 @@ struct RecommendationView: View {
             // If nothing has been set yet for the Recommendation view, run API calls and display results
             if discoverModel.imdbSearchContent?.id == nil || discoverModel.searchCast == [] {
                 await discoverModel.getFullTitleInfo(id: (discoverModel.imdbSearchContent?.id)!)
-                discoverModel.getKnownForContentFromCast {
-                    // Get a new recommendation
-                    discoverModel.setRecommendedContent()
-                }
+                await discoverModel.getKnownForContent()
+                discoverModel.setRecommendedContent()
             } else {
                 // Use pre-set data to populate views
                 discoverModel.setRecommendedContent()

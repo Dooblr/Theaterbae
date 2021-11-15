@@ -12,9 +12,6 @@ struct TheaterbaeApp: App {
     
     let persistenceController = PersistenceController.shared
     
-    // Init constants to retrieve API keys from firebase
-    let constants = Constants()
-    
     var body: some Scene {
         WindowGroup {
             TabContainerView()

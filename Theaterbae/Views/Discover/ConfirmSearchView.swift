@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ConfirmSearchResultView: View {
+struct ConfirmSearchView: View {
     
     // Access to view driving model
     @EnvironmentObject var discoverModel: DiscoverModel
