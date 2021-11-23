@@ -20,7 +20,6 @@ struct TabContainerView: View {
                     Image(systemName: "list.bullet")
                     Text("Watch List")
                 }
-            
         }
     }
 }

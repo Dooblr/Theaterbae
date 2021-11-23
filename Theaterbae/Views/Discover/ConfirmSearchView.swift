@@ -24,13 +24,24 @@ struct ConfirmSearchView: View {
         VStack{
             
             if discoverModel.isLoading == false {
-                let uiImage = UIImage(data: discoverModel.confirmTitleImageData ?? Data())
-                Image(uiImage: uiImage ?? UIImage())
-                    .resizable()
-                    .scaledToFit()
-                    .cornerRadius(10)
-                    .padding(.vertical)
-    //                .redacted(reason: .placeholder)
+//                let uiImage = UIImage(data: discoverModel.confirmTitleImageData ?? Data())
+//                Image(uiImage: uiImage ?? UIImage())
+//                    .resizable()
+//                    .scaledToFit()
+//                    .cornerRadius(10)
+//                    .padding(.vertical)
+                AsyncImage(url: URL(string: discoverModel.imdbSearchContent?.image ?? ""))
+                    { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .cornerRadius(10)
+                } placeholder: {
+                    Image(systemName: "photo")
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundColor(.gray)
+                }
                 
                 // Title/name
                 Text(discoverModel.imdbSearchContent?.title ?? "")
@@ -50,13 +61,13 @@ struct ConfirmSearchView: View {
                 // Yes/No buttons
                 HStack{
                     
-                    // Move to the recomendation view
+                    // Button to proceed to the recomendation view
                     NavigationLink(destination: RecommendationView()) {
                         CustomButton(text: "Yes", color: .green)
                     }
                     
+                    // Button to get the next title
                     Button {
-                        // Increment the search index to get the next title
                         discoverModel.searchIndex += 1
                         discoverModel.showNewImdbSearchResult()
                     } label: {
@@ -71,17 +82,15 @@ struct ConfirmSearchView: View {
             // TODO: Navigate transition left instead of right
             NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: $showSearchView) { EmptyView() }
             
-        }.onAppear {
+        }.task {
             if discoverModel.imdbSearchContent == nil {
-                Task{
-                    await discoverModel.searchAll(title: title)
-                    discoverModel.showNewImdbSearchResult()
-                }
+                await discoverModel.searchAll(title: title)
+                discoverModel.showNewImdbSearchResult()
             } else {
                 discoverModel.showNewImdbSearchResult()
             }
         }
-        .alert("End of available content", isPresented: $discoverModel.autoSearchAlertIsPresented) {
+        .alert("End of available content", isPresented: $discoverModel.alertNoSearchResultsRemaining) {
 //            Alert(title: Text("Alert"), message: Text("End of results"), dismissButton: .default(Text("Ok")))
             Button("Ok") {
                 showSearchView = true

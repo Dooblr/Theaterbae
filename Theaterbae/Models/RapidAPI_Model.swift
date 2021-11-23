@@ -7,44 +7,6 @@
 
 import Foundation
 
-struct IMDBSearch: Decodable {
-    var d = [IMDBTitle]()
-}
-
-class IMDBTitle: Decodable, ObservableObject {
-    
-    var id: String?
-    var image: IMDBImage?
-    var title: String?
-    var type: String?
-    var cast: String?
-    var year: Int?
-    var yearsRunning: String?
-    
-    enum CodingKeys:String,CodingKey {
-        case id
-        case image = "i"
-        case title = "l"
-        case type = "q"
-        case cast = "s"
-        case year = "y"
-        case yearsRunning = "yr"
-    }
-}
-
-struct IMDBImage: Decodable {
-    
-    var height: Int?
-    var imageUrl: String?
-    var width: Int?
-    
-    enum CodingKeys: CodingKey {
-        case height
-        case imageUrl
-        case width
-    }
-}
-
 struct KnownForSearch: Decodable {
     var title :KnownForTitle
     var imdbRating: Double
@@ -59,6 +21,8 @@ struct KnownForTitle: Decodable {
     var title: String?
     var titleType: String?
     var year: Int?
+    // inserted in DiscoverModel.getKnownForContent:
+    var imageData: Data?
 }
 
 struct KnownForImage: Decodable {

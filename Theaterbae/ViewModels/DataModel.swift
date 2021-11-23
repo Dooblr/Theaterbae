@@ -18,7 +18,7 @@ class DataModel: ObservableObject {
 //        container = NSPersistentContainer(name: "ContentData")
         container.loadPersistentStores { description, error in
             if let error = error {
-                print("error loading CoreData. \(error)")
+                print("Error loading CoreData: \(error)")
             } else {
                 print("Successfully loaded CoreData")
             }

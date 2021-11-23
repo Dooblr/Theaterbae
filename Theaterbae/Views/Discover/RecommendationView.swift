@@ -20,32 +20,40 @@ struct RecommendationView: View {
     @State var showSearchView = false
     
     var body: some View {
+        
         VStack{
             
             if discoverModel.isLoading == false {
                 
-                let uiImage = UIImage(data: discoverModel.recommendationImageData ?? Data())
-                Image(uiImage: uiImage ?? UIImage())
-                    .resizable()
-                    .scaledToFit()
-                    .cornerRadius(10)
+                // Asynchronously load poster image
+                AsyncImage(url: URL(string: discoverModel.recommendedContent?.image?.url ?? ""))
+                    { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .cornerRadius(10)
+                } placeholder: {
+                    Image(systemName: "photo")
+                        .resizable()
+                        .foregroundColor(.gray)
+                        .scaledToFit()
+                }
                 
+                // Title
                 Text(discoverModel.recommendedContent?.title ?? "")
                     .font(.title)
                 
+                // Year
                 Text(String(discoverModel.recommendedContent?.year ?? 0))
                     .opacity(0.67)
                 
-                
-                // Provides a new recommendation
+                // Button to provide a new recommendation
                 Button {
                     // Get a new recommendation
-                    discoverModel.setRecommendedContent()
+                    discoverModel.nextRecommendedContent()
                 } label: {
                     CustomButton(text:"New Recommendation", color:.blue)
                 }
-                
-                Spacer()
                 
                 HStack {
                    
@@ -53,12 +61,9 @@ struct RecommendationView: View {
                     Button {
                         discoverModel.revertRecommendedContent()
                     } label: {
-                        HStack {
-                            CustomButton(text:"Back", color:.yellow)
-                        }
+                        CustomButton(text:"Back", color:.yellow)
                     }
 
-                    
                     // Adds to coredata watch list, loads a new recommendation
                     Button  {
                         // Add to coredata, plot is derived from the ID in addcontent
@@ -68,7 +73,7 @@ struct RecommendationView: View {
                                                   year: discoverModel.recommendedContent?.year ?? 0)
                         
                         // Get a new recommendation
-                        discoverModel.setRecommendedContent()
+                        discoverModel.nextRecommendedContent()
                         
                         // Alert that it has been saved
                         addedToWatchlistAlertIsPresented = true
@@ -82,18 +87,20 @@ struct RecommendationView: View {
                 Text("Loading...")
             }
             
+            // Empty navigationlink used to navigate back to SearchView
             NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: $showSearchView) { EmptyView() }
         }
         .padding()
         .task {
             // If nothing has been set yet for the Recommendation view, run API calls and display results
-            if discoverModel.imdbSearchContent?.id == nil || discoverModel.searchCast == [] {
+            if discoverModel.imdbSearchContent?.id == nil || discoverModel.searchCast.isEmpty {
                 await discoverModel.getFullTitleInfo(id: (discoverModel.imdbSearchContent?.id)!)
                 await discoverModel.getKnownForContent()
-                discoverModel.setRecommendedContent()
+                discoverModel.nextRecommendedContent()
+                discoverModel.isLoading = false
             } else {
-                // Use pre-set data to populate views
-                discoverModel.setRecommendedContent()
+                // If data has already been loaded, populate view
+                discoverModel.nextRecommendedContent()
             }
         }
         .alert("Added to Watch List", isPresented: $addedToWatchlistAlertIsPresented) {
