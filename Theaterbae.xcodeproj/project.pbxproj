@@ -12,7 +12,6 @@
 		843184C826F2138900220C3F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 843184C726F2138900220C3F /* Assets.xcassets */; };
 		843184CB26F2138900220C3F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 843184CA26F2138900220C3F /* Preview Assets.xcassets */; };
 		843184DB26F213CC00220C3F /* ConfirmSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184D326F213BB00220C3F /* ConfirmSearchView.swift */; };
-		843184DC26F213D300220C3F /* API_Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184DA26F213C200220C3F /* API_Keys.swift */; };
 		843184DD26F213D500220C3F /* RapidAPI_Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184D826F213BF00220C3F /* RapidAPI_Model.swift */; };
 		843184DE26F213D700220C3F /* DiscoverModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184D626F213BD00220C3F /* DiscoverModel.swift */; };
 		843184DF26F213DC00220C3F /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843184D426F213BB00220C3F /* SearchView.swift */; };
@@ -40,7 +39,6 @@
 		843184D426F213BB00220C3F /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		843184D626F213BD00220C3F /* DiscoverModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverModel.swift; sourceTree = "<group>"; };
 		843184D826F213BF00220C3F /* RapidAPI_Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RapidAPI_Model.swift; sourceTree = "<group>"; };
-		843184DA26F213C200220C3F /* API_Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API_Keys.swift; sourceTree = "<group>"; };
 		843184E026F21A2B00220C3F /* CustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomButton.swift; sourceTree = "<group>"; };
 		843184E226F21B2000220C3F /* RecommendationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationView.swift; sourceTree = "<group>"; };
 		844D82CD273F584600B65CB1 /* IMDB_Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IMDB_Model.swift; sourceTree = "<group>"; };
@@ -140,7 +138,6 @@
 			isa = PBXGroup;
 			children = (
 				8485521C2742579400F6B3B1 /* Helpers.swift */,
-				843184DA26F213C200220C3F /* API_Keys.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -262,7 +259,6 @@
 				8485521D2742579400F6B3B1 /* Helpers.swift in Sources */,
 				84E7B6D6271ABCE80000FA6D /* ContentData.xcdatamodeld in Sources */,
 				84D953862718EF6A00CAB87D /* WatchListView.swift in Sources */,
-				843184DC26F213D300220C3F /* API_Keys.swift in Sources */,
 				843184DD26F213D500220C3F /* RapidAPI_Model.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
