@@ -23,7 +23,7 @@ class DiscoverModel: ObservableObject {
     
     // MARK: - Search
 
-    // Array of IMDBTitles resulting from IMDB Search All
+    // Array of IMDB titles resulting from IMDB Search All
     var imdbSearchResults:[SearchResult] = []
 
     // Single IMDB title object published for use in confirmSeachView
@@ -48,21 +48,13 @@ class DiscoverModel: ObservableObject {
     @Published var searchIndex = 0
     
     // Number of actors from which to pull KnownForContent (zero-based so total = actorsToQuery + 1)
-    let actorsToQuery = 2
-
-    
-    // MARK: - Image Data
-
-    // ConfirmSearchResultView image
-    @Published var confirmTitleImageData:Data?
-    // RecommendationView image
-    @Published var recommendationImageData:Data?
+    let actorsToQuery = 0
 
     
     // MARK: - View toggles
     
     // Toggles loading views while fetching data
-    @Published var isLoading: Bool?
+    @Published var isLoading = true
 
     
     // MARK: - Alerts
@@ -77,7 +69,7 @@ class DiscoverModel: ObservableObject {
     
     // MARK: - IMDB API Methods
     
-    // Takes user input from SearchView
+    // Takes user input from SearchView and populates a list of search results self.imdbSearchResults
     func searchAll(title:String) async {
         
         // Clear any previous search results
@@ -120,7 +112,7 @@ class DiscoverModel: ObservableObject {
             if self.searchIndex < self.imdbSearchResults.count {
                 self.imdbSearchContent = self.imdbSearchResults[self.searchIndex]
             } else {
-                // There are no other results
+                // Alert view that there are no other results
                 self.alertNoSearchResultsRemaining = true
             }
 
@@ -132,48 +124,27 @@ class DiscoverModel: ObservableObject {
         }
     }
     
-    // Takes a string and a view name and sets the image
-    func setViewImageDataFromUrl(url:String, forView:String) async {
-        
-        self.isLoading = true
-
-        if let url = URL(string: url) {
-            do {
-                let (data, _) = try await URLSession.shared.data(from: url)
-                
-                // Sets the image data based on the view name passed in
-                DispatchQueue.main.async {
-                    switch forView{
-                    case "ConfirmSearchResultView":
-                        self.confirmTitleImageData = data
-                    case "RecommendationView":
-                        self.recommendationImageData = data
-                    default:
-                        break
-                    }
-                    self.isLoading = false
-                }
-            } catch {
-                print(error)
-            }
-        }
-    }
-    
     // Takes an IMDB ID and gets the full list of information for that title. Currently only using to set cast data
-    func getFullTitleInfo(id: String) async {
+    func getFullTitleInfo(id: String) async -> Title{
         
-        var request = URLRequest(url: URL(string: "https://imdb-api.com/en/API/Title/\(API_Keys.imdbApiKey)/\(id)/FullActor,FullCast,Posters,Images,Trailer,Ratings,")!,
+        // Ensure that ID is formatted correctly: tt0000000
+        var strippedID = id
+        
+        if strippedID.count > 9 {
+            strippedID = String(id.dropFirst(7).dropLast(1))
+        }
+        
+        var request = URLRequest(url: URL(string: "https://imdb-api.com/en/API/Title/\(API_Keys.imdbApiKey)/\(strippedID)/FullActor,FullCast,Posters,Images,Trailer,Ratings,")!,
                                  cachePolicy: .useProtocolCachePolicy,
                                  timeoutInterval: Double.infinity)
         request.httpMethod = "GET"
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request as URLRequest)
+            print(data)
             do {
                 let result = try JSONDecoder().decode(Title.self, from: data)
-                for star in result.starList! {
-                    self.searchCast.append(star.id)
-                }
+                return result
             } catch {
                 print("failed to parse JSON. Error: ")
                 print(error)
@@ -181,6 +152,15 @@ class DiscoverModel: ObservableObject {
         } catch {
             print("failed to get full title. Error: ")
             print(error)
+        }
+        // returns empty title if result failed
+        return Title()
+    }
+    
+    // Takes a title and sets the search cast
+    func setCast(title:Title) {
+        for star in title.starList! {
+            self.searchCast.append(star.id)
         }
     }
     
@@ -221,12 +201,12 @@ class DiscoverModel: ObservableObject {
         }
     }
     
-    func getKnownForImageData() async {
-        for (index, title) in self.knownForContent.enumerated() {
-            self.knownForContent[index].imageData = await Helpers.getImageDataFromUrl(url: (title.image?.url)!)
-        }
-        print("loaded images")
-    }
+//    func getKnownForImageData() async {
+//        for (index, title) in self.knownForContent.enumerated() {
+//            self.knownForContent[index].imageData = await Helpers.getImageDataFromUrl(url: (title.image?.url)!)
+//        }
+//        print("loaded images")
+//    }
 
     func nextRecommendedContent() {
         
@@ -244,10 +224,9 @@ class DiscoverModel: ObservableObject {
                 if !self.shownContentIds.contains(imdbTitleId) {
 
                     // Set the observed recommended content
-                    // knownForTitle is a single item in the list of results from an IMDB content cast ID
                     self.recommendedContent = knownForTitle
                     
-                    self.recommendationImageData = knownForTitle.imageData
+//                    self.recommendationImageData = knownForTitle.imageData
                     
                     // Add recommended content to the already shown array
                     self.shownContentIds.append(imdbTitleId)
@@ -255,18 +234,9 @@ class DiscoverModel: ObservableObject {
                     break
                 }
                 
-                // increment loop index
+                // increment loop
                 index += 1
             }
-            
-            // set the displayed image data to new content image
-//            Task {
-//                await self.setViewImageDataFromUrl(url: self.recommendedContent?.image?.url ?? "", forView: "RecommendationView")
-//
-//                // Notify view to remove loading view
-//                self.isLoading = false
-//            }
-            
             
             // If index has exceeded knownforcontent, throw error and navigate back to search
             if index == self.knownForContent.count {
@@ -277,6 +247,7 @@ class DiscoverModel: ObservableObject {
     
     // Return to previous content
     func revertRecommendedContent() {
+        
         // Remove 2 because recommendationview will reload and setRecommendedContent will re-add the previous content we're trying to return to
         self.shownContentIds.removeLast(2)
         

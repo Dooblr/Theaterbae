@@ -36,7 +36,7 @@ class DataModel: ObservableObject {
         }
     }
     
-    func addContent(id:String, name:String, image:Data, year:Int) {
+    func addContent(id:String, name:String, imageUrl:String, year:Int) async {
         
         // Create a new data entity
         let newContent = ContentEntity(context: container.viewContext)
@@ -47,14 +47,15 @@ class DataModel: ObservableObject {
         // Set data values
         newContent.id = strippedID
         newContent.name = name
-        newContent.image = image
         newContent.year = Int64(year)
-        // Asynchronously run the plot API call with ID
-        Task{
-            newContent.plot = await DiscoverModel.getContentPlot(imdbContentID: strippedID)
+        
+        // Asynchronously get plot from ID and image data from URL
+        newContent.image = await Helpers.getImageDataFromUrl(url: imageUrl)
+        newContent.plot = await DiscoverModel.getContentPlot(imdbContentID: strippedID)
+        
+        DispatchQueue.main.async {
+            self.saveData()
         }
-
-        saveData()
     }
     
     func deleteContent(indexSet:IndexSet) {

@@ -24,12 +24,8 @@ struct ConfirmSearchView: View {
         VStack{
             
             if discoverModel.isLoading == false {
-//                let uiImage = UIImage(data: discoverModel.confirmTitleImageData ?? Data())
-//                Image(uiImage: uiImage ?? UIImage())
-//                    .resizable()
-//                    .scaledToFit()
-//                    .cornerRadius(10)
-//                    .padding(.vertical)
+
+                Spacer()
                 AsyncImage(url: URL(string: discoverModel.imdbSearchContent?.image ?? ""))
                     { image in
                         image
@@ -37,19 +33,12 @@ struct ConfirmSearchView: View {
                             .scaledToFit()
                             .cornerRadius(10)
                 } placeholder: {
-                    Image(systemName: "photo")
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundColor(.gray)
+                    ProgressView()
                 }
                 
                 // Title/name
                 Text(discoverModel.imdbSearchContent?.title ?? "")
                     .font(.title)
-                
-                // Year
-//                Text(String(discoverModel.searchContent?.year ?? 0))
-//                    .opacity(0.67)
                 
                 Spacer()
                 
@@ -73,29 +62,25 @@ struct ConfirmSearchView: View {
                     } label: {
                         CustomButton(text: "No", color: .red)
                     }
-                }
-                .padding()
+                }.padding()
             } else {
                 Text("Loading...")
             }
             
             // TODO: Navigate transition left instead of right
             NavigationLink(destination: SearchView().navigationBarHidden(true), isActive: $showSearchView) { EmptyView() }
-            
         }.task {
             if discoverModel.imdbSearchContent == nil {
                 await discoverModel.searchAll(title: title)
-                discoverModel.showNewImdbSearchResult()
-            } else {
-                discoverModel.showNewImdbSearchResult()
             }
+            discoverModel.showNewImdbSearchResult()
         }
         .alert("End of available content", isPresented: $discoverModel.alertNoSearchResultsRemaining) {
-//            Alert(title: Text("Alert"), message: Text("End of results"), dismissButton: .default(Text("Ok")))
             Button("Ok") {
                 showSearchView = true
             }
-        }.alert("No internet connection", isPresented: $discoverModel.alertNoInternet) {
+        }
+        .alert("No internet connection", isPresented: $discoverModel.alertNoInternet) {
             Button("Ok") {
                 showSearchView = true
             }
@@ -104,9 +89,3 @@ struct ConfirmSearchView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
-
-//struct ResultView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ResultView()
-//    }
-//}

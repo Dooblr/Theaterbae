@@ -41,7 +41,6 @@ struct WatchListView: View {
                 }
             }
             .navigationBarTitle("Watch List")
-            
         }
     }
 }

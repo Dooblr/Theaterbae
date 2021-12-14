@@ -38,9 +38,7 @@ struct SearchView: View {
                         alertEmptyTextFieldIsPresented = true
                     }
                 }
-                
-                Spacer()
-                    
+                Spacer()   
             }
             .padding()
             .navigationTitle("Discover")
